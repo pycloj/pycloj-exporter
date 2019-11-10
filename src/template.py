@@ -1,7 +1,7 @@
 from string import Template
-module_head = Template('''
+source_file_head = Template('''
 (ns $namespace
-  ""
+  "$docstring"
   (:require [libpython-clj.python
              :refer [import-module
                      get-item
@@ -50,12 +50,24 @@ method_positional_kw_defaults = Template('''
    (py/call-attr-kw $module_name "$function_name" [] {$kw_args})
 ''')
 
+project_tpl = Template('''
+(defproject $project "$version"
+  :description "FIXME: write description"
+  :url "http://example.com/FIXME"
+  :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
+            :url "https://www.eclipse.org/legal/epl-2.0/"}
+  :dependencies [[org.clojure/clojure "1.10.0"] [libpython-clj "1.6-SNAPSHOT"][alembic "0.3.2"]]
+  :target-path "target/%s"
+  :profiles {:uberjar {:aot :all}})
+''')
+def get_project(project, version):
+  return project_tpl.substitute({"project":project, "version":version})
 
 
-def get_module_head(namespace, module_name):
-  return module_head.substitute({"namespace":namespace, "module_name":module_name})
+def get_source_file_head(namespace, module_name, docstring):
+  return source_file_head.substitute({"namespace":namespace, "module_name":module_name,"docstring":docstring})
 
-def get_function(module_name, function_name, positional_args=None, kw_args=None, defaults=None, docstring=""):
+def get_function(module_name, function_name, positional_args="", kw_args="", defaults="", docstring=""):
   if positional_args and kw_args and defaults:
     return method_positional_kw_defaults.substitute({
       "docstring":docstring,
@@ -95,11 +107,13 @@ def get_function(module_name, function_name, positional_args=None, kw_args=None,
       "docstring":docstring,
       "positional_args":positional_args
     })
+  else:
+    return "UNDEFINED"
 
 
 
 if __name__ == "__main__":
-  print(get_module_head("keras", "keras"))
+  print(get_source_file_head("keras", "keras"))
   print(get_function("keras", "input", positional_args="a b c"))
   print(get_function("keras", "input", positional_args="a b c", kw_args = "d e f"))
   print(get_function("keras", "input", positional_args="a b c", kw_args = "d e f", defaults="e 1 f 2"))
