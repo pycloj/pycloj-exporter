@@ -91,7 +91,8 @@ def get_function(module_name, function_name, positional_args="", kw_args="", def
       "function_name":function_name,
       "docstring":docstring,
       "positional_args":positional_args,
-      "kw_args":kw_args
+      "kw_args":kw_args,
+      "defaults":defaults
     })
   elif kw_args:
     return method_kw.substitute({
@@ -108,7 +109,12 @@ def get_function(module_name, function_name, positional_args="", kw_args="", def
       "positional_args":positional_args
     })
   else:
-    return "UNDEFINED"
+      return method_positional.substitute({
+      "module_name":module_name,
+      "function_name":function_name,
+      "docstring":docstring,
+      "positional_args":positional_args
+    })
 
 
 

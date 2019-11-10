@@ -11,40 +11,40 @@ PYCLJ_VERSION = "0.1"
 def get_positional_args(sig):
     params = []
     for param in sig.parameters.values():
-        if param._kind == "POSITIONAL_ONLY":
+        if param.kind == inspect.Parameter.POSITIONAL_ONLY:
             params.append(param.name)
     return " ".join(params)
 
-
+def to_clj_types(t):
+  if type(t) == bool:
+    return 
 
 def get_keyword_args(sig):
     params = []
     defaults = []
-    for param in sig.parameters.values():
-        if param._kind in ["KEYWORD_ONLY", "POSITIONAL_OR_KEYWORD"]:
-            params.append(param.name)
-            if params.default is not None:
-                defaults.append(params.name)
-                defaults.append(params.default)
+    for p in sig.parameters.values():
+        print(p.kind)
+        if p.kind in [inspect.Parameter.KEYWORD_ONLY,inspect.Parameter.POSITIONAL_OR_KEYWORD]:
+            params.append(p.name)
+            if p.default is not None:
+                defaults.append(p.name)
+                defaults.append(str(p.default).lower())
+    print(params)
+    print(defaults)
     return " ".join(params), " ".join(defaults)
 
 
 def handle_function(the_module, module_name, element):
     sig = inspect.signature(element[1])
     print(sig)
-    position_args = get_positional_args(sig)
-    keyword_args, defaults = get_keyword_args(sig)
+    positional_args = get_positional_args(sig)
+    kw_args, defaults = get_keyword_args(sig)
 
-    print("get function", module_name,
-                        element[0],
-                        position_args,
-                        keyword_args,
-                        defaults,
-                        element[1].__doc__)
+    print("kw_args", kw_args)
     return get_function(module_name,
                         element[0],
-                        positional_args=position_args,
-                        kw_args=keyword_args,
+                        positional_args=positional_args,
+                        kw_args=kw_args,
                         defaults=defaults,
                         docstring=element[1].__doc__)
 
