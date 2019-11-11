@@ -1,65 +1,14 @@
-from string import Template
-source_file_head = Template('''
-(ns $namespace
-  "$docstring"
-  (:require [libpython-clj.python
-             :refer [import-module
-                     get-item
-                     get-attr
-                     python-type
-                     call-attr
-                     call-attr-kw
-                     att-type-map
-                     ->py-dict
-                     ->py-list
-                     ]
-             :as py]
-            [clojure.pprint :as pp]))
 
-(py/initialize!)
-(defonce $module_name (import-module "$module_name"))
-''')
 
-method_positional = Template('''
-(defn $function_name [ $positional_args ]
-  "$docstring"
-  (py/call-attr $module_name "$function_name"  $positional_args ))
-''')
-method_kw = Template('''
-(defn $function_name [ & {:keys [$kw_args]} ]
-  "$docstring"
-   (py/call-attr-kw $module_name "$function_name" [] {$kw_args})
-''')
- 
-method_kw_defaults = Template('''
-(defn $function_name [ & {:keys [$kw_args]
-                          :or {$defaults}} ]
-  "$docstring"
-   (py/call-attr-kw $module_name "$function_name" [] {$kw_args})
-''')
-method_positional_kw = Template('''
-(defn $function_name [$positional_args  & {:keys [$kw_args]} ]
-  "$docstring"
-   (py/call-attr-kw $module_name "$function_name" [$positional_args] {$kw_args})
-''')
+from templates import (method_positional, 
+                                  method_kw,
+                                  method_kw_defaults, 
+                                  method_positional_kw, 
+                                  method_positional_kw_defaults, 
+                                  project_tpl,
+                                  source_file_head
+                                  )
 
-method_positional_kw_defaults = Template('''
-(defn $function_name [$positional_args & {:keys [$kw_args]
-                          :or {$defaults} ]
-  "$docstring"
-   (py/call-attr-kw $module_name "$function_name" [] {$kw_args})
-''')
-
-project_tpl = Template('''
-(defproject $project "$version"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
-  :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
-            :url "https://www.eclipse.org/legal/epl-2.0/"}
-  :dependencies [[org.clojure/clojure "1.10.0"] [libpython-clj "1.6-SNAPSHOT"][alembic "0.3.2"]]
-  :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}})
-''')
 def get_project(project, version):
   return project_tpl.substitute({"project":project, "version":version})
 
