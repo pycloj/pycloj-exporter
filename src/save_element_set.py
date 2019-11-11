@@ -7,6 +7,7 @@ from template import (get_project, get_function, get_source_file_head)
 
 PYCLJ_VERSION = "0.1"
 
+elements_set = set()
 
 def get_positional_args(sig):
     params = []
@@ -68,6 +69,7 @@ def is_globals(module, name):
 def handle_module(the_module, module_name, src_path, test_path, is_root=False):
     file_head = get_source_file_head(module_name, module_name,
                                      the_module.__doc__)
+    print("in handle_module")
     data = []
     for element in inspect.getmembers(the_module):
         if element[0] in [
@@ -77,31 +79,36 @@ def handle_module(the_module, module_name, src_path, test_path, is_root=False):
         ]:
             pass
         elif inspect.ismodule(element[1]):
-          print("module  name = ", element[1].__name__)
           sub_module_name = element[1].__name__
-          try:
+          if element[1] in elements_set:
+            pass
+          else:
+            elements_set.add(element[1])
+            try:
               ""
               sub_module = __import__(sub_module_name)
-          except ModuleNotFoundError:
+            except ModuleNotFoundError:
               print(
                   f"could not import module {sub_module_name} "
               )
               # print(f"pip install {module_name}")
               # print(f"or verify that the right virtualenv is active")
               exit(-1)
-          handle_module(sub_module, f"{module_name}.{sub_module_name}",src_path,test_path,is_root=False)
+            handle_module(sub_module, sub_module_name,src_path,test_path,is_root=False)
 
-        # elif inspect.isclass(element[1]):
-        #   data += handle_class(the_module, element)
-        # elif inspect.ismethod(element[1]):
-        #   data += handle_class_method(the_module, element)
-        # elif inspect.isabstract(element[1]):
-        #   print(f"{element[0]} is an abstruct class - skip")
+        elif inspect.isclass(element[1]):
+            elements_set.add(element[1])
+        elif inspect.ismethod(element[1]):
+            elements_set.add(element[1])
+        elif inspect.isabstract(element[1]):
+            elements_set.add(element[1])
         elif inspect.isfunction(element[1]):
-            data += handle_function(the_module,module_name, element)
-    with open(os.path.join(src_path, f"{module_name}.clj"), "w") as f:
-        f.writelines(file_head)
-        f.writelines(data)
+            elements_set.add(element[1])
+            # data += handle_function(the_module,module_name, element)
+    # with open(os.path.join(src_path, f"{module_name}.clj"), "w") as f:
+    #     f.writelines(file_head)
+    #     f.writelines(data)
+
 
 
 def create_sub_elements_new(the_module,
@@ -117,8 +124,8 @@ def create_sub_elements_new(the_module,
                 '__spec__', '__version__'
         ]:
             pass
-        elif element[0] == "__doc__":
-            data.append(element[1])
+        # elif element[0] == "__doc__":
+        #     data.append(element[1])
         elif inspect.ismodule(element[1]):
             handle_module(f"{module_name}.{element[0]}", path, is_root=False)
         elif inspect.isclass(element[1]):
@@ -192,3 +199,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     handle_python_lib(args.module, is_root=True, path=args.output)
+    print(len(elements_set))
+    for e in elements_set:
+      print(e.__name__)
