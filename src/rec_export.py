@@ -8,7 +8,17 @@ from template import (get_project, get_function, get_source_file_head)
 
 PYCLJ_VERSION = "0.1"
 
-sub_modules = set()
+
+def get_sub_modules(the_module):
+  sub_modules = set()
+  for importer, modname, ispkg in pkgutil.walk_packages(path=the_module.__path__):
+    if ispkg:
+      sub_modules.add(modname)
+    else:
+      print ("f{modname} is not a module")
+  print(sub_modules)
+  return sub_modules
+
 
 def get_positional_args(sig):
     params = []
@@ -36,9 +46,8 @@ def get_keyword_args(sig):
     return " ".join(params), " ".join(defaults)
 
 
-def handle_function(the_module, module_name, element):
+def handle_function(module_name, element):
     sig = inspect.signature(element[1])
-    print(sig)
     positional_args = get_positional_args(sig)
     kw_args, defaults = get_keyword_args(sig)
 
@@ -49,6 +58,8 @@ def handle_function(the_module, module_name, element):
                         kw_args=kw_args,
                         defaults=defaults,
                         docstring=element[1].__doc__)
+
+
 
 
 def handle_class(module, element):
@@ -69,51 +80,11 @@ def is_globals(module, name):
 
 
 
-def handle_module(the_module, module_name, src_path, test_path, is_root=False):
-    file_head = get_source_file_head(module_name, module_name,
-                                     the_module.__doc__)
-    data = []
-    for element in inspect.getmembers(the_module):
-        if element[0] in [
-                '__builtins__', '__cached__', '__doc__', '__file__',
-                '__loader__', '__name__', '__package__', '__path__',
-                '__spec__', '__version__'
-        ]:
-            pass
-        elif inspect.ismodule(element[1]):
-          print("module  name = ", element[1].__name__)
-          sub_module_name = element[1].__name__
-          try:
-              ""
-              sub_module = __import__(sub_module_name)
-          except ModuleNotFoundError:
-              print(
-                  f"could not import module {sub_module_name} "
-              )
-              # print(f"pip install {module_name}")
-              # print(f"or verify that the right virtualenv is active")
-              exit(-1)
-          handle_module(sub_module, f"{module_name}.{sub_module_name}",src_path,test_path,is_root=False)
-
-        # elif inspect.isclass(element[1]):
-        #   data += handle_class(the_module, element)
-        # elif inspect.ismethod(element[1]):
-        #   data += handle_class_method(the_module, element)
-        # elif inspect.isabstract(element[1]):
-        #   print(f"{element[0]} is an abstruct class - skip")
-        elif inspect.isfunction(element[1]):
-            data += handle_function(the_module,module_name, element)
-    with open(os.path.join(src_path, f"{module_name}.clj"), "w") as f:
-        f.writelines(file_head)
-        f.writelines(data)
-
-
-def create_sub_elements_new(the_module,
-                            module_name,
+def handle_module(module_name,
                             src_path,
-                            test_path,
-                            is_root=False):
+                            the_module):
     data = []
+
     for element in inspect.getmembers(the_module):
         if element[0] in [
                 '__builtins__', '__cached__', '__doc__', '__file__',
@@ -123,8 +94,6 @@ def create_sub_elements_new(the_module,
             pass
         elif element[0] == "__doc__":
             data.append(element[1])
-        elif inspect.ismodule(element[1]):
-            handle_module(f"{module_name}.{element[0]}", path, is_root=False)
         elif inspect.isclass(element[1]):
             data += handle_class(the_module, element)
         elif inspect.ismethod(element[1]):
@@ -132,7 +101,7 @@ def create_sub_elements_new(the_module,
         elif inspect.isabstract(element[1]):
             print(f"{element[0]} is an abstruct class - skip")
         elif inspect.isfunction(element[1]):
-            data += handle_function(the_module, element)
+            data += handle_function(module_name, element)
 
 
 
@@ -176,6 +145,18 @@ def handle_python_lib(module_name, path="", is_root=False, rename_path=True):
     # create test dir
     test_path = os.path.join(path, "test")
     mkpath(test_path)
+    sub_modules = get_sub_modules(the_module)
+    handle_module(module_name,
+                            src_path,
+                            the_module)
+    for m in sub_modules:
+      p = mkpath(os.path.join(src_path, m))
+      mod = __import__(module_name)
+      globals()[m] = mod
+      handle_module(f"{module_name}.{m}",
+                            p, mod)
+
+
     
     
 
