@@ -17,5 +17,5 @@ source_file_head = Template('''
             [clojure.pprint :as pp]))
 
 (py/initialize!)
-(defonce $module_name (import-module "$module_name"))
+(defonce $module_name (import-module "$namespace"))
 ''')
