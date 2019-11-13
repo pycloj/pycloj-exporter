@@ -2,21 +2,33 @@ import inspect
 import types
 import argparse
 import os
+from PyInquirer import prompt
 from distutils.dir_util import mkpath
 import pkgutil
 from template import (get_project, get_function, get_source_file_head)
 
 PYCLJ_VERSION = "0.1"
 
+elements_exported = set()
 
 def get_sub_modules(the_module):
   sub_modules = set()
   for importer, modname, ispkg in pkgutil.walk_packages(path=the_module.__path__):
-    if ispkg:
+    questions = [
+    {
+        'type': 'confirm',
+        'name': modname,
+        'message': f'import sub module keras.{modname}',
+        'default': False
+    }
+
+    ]
+    answer = prompt(questions)
+    print (answer)
+    print (type(answer), answer[modname])
+    if answer[modname]:
       sub_modules.add(modname)
-    else:
-      print ("f{modname} is not a module")
-  print(sub_modules)
+  
   return sub_modules
 
 
@@ -46,37 +58,57 @@ def get_keyword_args(sig):
     return " ".join(params), " ".join(defaults)
 
 
-def handle_function(module_name, element):
-    sig = inspect.signature(element[1])
+def handle_function(module_name, fn_name, fn):
+    sig = inspect.signature(fn)
     positional_args = get_positional_args(sig)
     kw_args, defaults = get_keyword_args(sig)
 
-    print("kw_args", kw_args)
+    # print("kw_args", kw_args)
     return get_function(module_name,
-                        element[0],
+                        fn_name,
                         positional_args=positional_args,
                         kw_args=kw_args,
                         defaults=defaults,
-                        docstring=element[1].__doc__)
+                        docstring=fn.__doc__)
 
 
 
 
-def handle_class(module, element):
+
+def handle_class(module_name, src_path, clss_name, clss):
+    print("handle_class",module_name, src_path, clss_name, clss)
     data = []
-    data.append(element[1].__doc__)
-    return data
+    ignore = ['__call__', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__setstate__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__']
+    data += handle_function(module_name, clss_name, clss)
+
+  
+    data.append(get_function)
+    elements = inspect.getmembers(clss)
+    for e in elements:
+      #skipping members that start with a _
+      if e[0][0] == "_":
+        print(f"skiping {e[0]}" )
+      elif inspect.ismethod(e[1]):
+        res = handle_function(module_name, e[0], e[1])
+        print(type(res),res, e[0], e[1])
+        data+= [f";{e[0]}"]
 
 
-def handle_class_method(module, element):
-    data = []
-    data.append(element[1].__doc__)
-    return data
+    
+    file_head = get_source_file_head(f"{module_name}.{clss_name}", clss_name,
+                                     clss.__doc__)
+    with open(os.path.join(src_path, f"{clss_name}.clj"), "w") as f:
+        f.writelines(file_head)
+        for line in data:
+          try:
+            f.writelines(line)
+          except:
+            print(line)
+            # exit(0)
+      
 
 
-def is_globals(module, name):
-    pass
-
+       
 
 
 
@@ -92,16 +124,21 @@ def handle_module(module_name,
                 '__spec__', '__version__'
         ]:
             pass
+        elif element in elements_exported:
+          continue
         elif element[0] == "__doc__":
             data.append(element[1])
+            elements_exported.add(element)
         elif inspect.isclass(element[1]):
-            handle_class(the_module, element)
+            handle_class(module_name, src_path ,element[0], element[1])
+        #     elements_exported.add(element)
         # elif inspect.ismethod(element[1]):
         #     data += handle_class_method(the_module, element)
         # elif inspect.isabstract(element[1]):
         #     print(f"{element[0]} is an abstruct class - skip")
         elif inspect.isfunction(element[1]):
-            data += handle_function(module_name, element)
+            data += handle_function(module_name, element[0],element[1])
+            elements_exported.add(element)
     if base_module:
       namespace = f"{base_module}.{module_name}"
     else:
