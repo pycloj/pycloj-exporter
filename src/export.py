@@ -87,11 +87,22 @@ def handle_class(module_name, src_path, clss_name, clss):
     for e in elements:
       #skipping members that start with a _
       if e[0][0] == "_":
-        print(f"skiping {e[0]}" )
+         data+=f";skiping {e[0]} \n" 
       elif inspect.ismethod(e[1]):
+        # res = handle_function(module_name, e[0], e[1])
+        data+= [f";{e[0]}\n"]
+      elif inspect.isfunction(e[1]):
         res = handle_function(module_name, e[0], e[1])
-        print(type(res),res, e[0], e[1])
-        data+= [f";{e[0]}"]
+        data+= [res]
+        # data+= [f";function {e[0]} {str(e[1])}"]
+      elif isinstance(e[1], property):
+        # res = handle_function(module_name, e[0], e[1])
+        data+= [f";property {e[0]} {e[1]}\n"]
+      else:
+        # res = handle_function(module_name, e[0], e[1])
+        data+= [f";what am I else{e[0]} {e[1]} ?\n"]
+      
+      
 
 
     
