@@ -47,10 +47,9 @@ def get_keyword_args(sig):
     params = []
     defaults = []
     for p in sig.parameters.values():
-        print(p.kind)
         if p.kind in [inspect.Parameter.KEYWORD_ONLY,inspect.Parameter.POSITIONAL_OR_KEYWORD]:
             params.append(p.name)
-            if p.default is not None:
+            if p.default != inspect._empty:
                 defaults.append(p.name)
                 defaults.append(str(p.default).lower())
     print(params)
@@ -87,10 +86,12 @@ def handle_class(module_name, src_path, clss_name, clss):
     for e in elements:
       #skipping members that start with a _
       if e[0][0] == "_":
-         data+=f";skiping {e[0]} \n" 
-      elif inspect.ismethod(e[1]):
-        # res = handle_function(module_name, e[0], e[1])
-        data+= [f";{e[0]}\n"]
+      #    data+=f";skiping {e[0]} \n" 
+        pass
+      #TODO: class method
+      # elif inspect.ismethod(e[1]):
+      #   # res = handle_function(module_name, e[0], e[1])
+      #   data+= [f";{e[0]}\n"]
       elif inspect.isfunction(e[1]):
         res = handle_function(module_name, e[0], e[1])
         data+= [res]
