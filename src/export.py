@@ -11,14 +11,14 @@ PYCLJ_VERSION = "0.1"
 
 elements_exported = set()
 
-def get_sub_modules(the_module):
+def get_sub_modules(the_module,module_name):
   sub_modules = set()
   for importer, modname, ispkg in pkgutil.walk_packages(path=the_module.__path__):
     questions = [
     {
         'type': 'confirm',
         'name': modname,
-        'message': f'import sub module keras.{modname}',
+        'message': f'import sub module {module_name}.{modname}',
         'default': False
     }
 
@@ -49,7 +49,7 @@ def get_keyword_args(sig):
     for p in sig.parameters.values():
         if p.kind in [inspect.Parameter.KEYWORD_ONLY,inspect.Parameter.POSITIONAL_OR_KEYWORD]:
             params.append(p.name)
-            if p.default != inspect._empty:
+            if p.default != inspect._empty and p.default != None:
                 defaults.append(p.name)
                 defaults.append(str(p.default).lower())
     print(params)
@@ -58,7 +58,12 @@ def get_keyword_args(sig):
 
 
 def handle_function(module_name, fn_name, fn):
-    sig = inspect.signature(fn)
+    try:
+      sig = inspect.signature(fn)
+    except Exception as e:
+      print(e)
+      return ""
+
     positional_args = get_positional_args(sig)
     kw_args, defaults = get_keyword_args(sig)
 
@@ -165,7 +170,7 @@ def handle_module(module_name,
 
 
 
-def handle_python_lib(module_name, path="", is_root=False, rename_path=True):
+def handle_python_lib(module_name, path="", is_root=False, rename_path=True, sub_modules_list=None):
     print(f"importing module {module_name}")
     try:
         the_module = __import__(module_name)
@@ -204,7 +209,10 @@ def handle_python_lib(module_name, path="", is_root=False, rename_path=True):
     # create test dir
     test_path = os.path.join(path, "test")
     mkpath(test_path)
-    sub_modules = get_sub_modules(the_module)
+    if not sub_modules_list or len(sub_modules_list) == 0:
+      sub_modules = get_sub_modules(the_module, module_name)
+    else:
+      sub_modules = set(sub_modules_list)
     handle_module(module_name,
                             src_path,
                             the_module)
@@ -234,6 +242,10 @@ if __name__ == "__main__":
                         type=bool,
                         help="delete file and folders if already exist",
                         default=False)
+    parser.add_argument("--sub-modules",
+                        type=list,
+                        help="list of submodule to import",
+                        default=[])
 
     args = parser.parse_args()
-    handle_python_lib(args.module, is_root=True, path=args.output)
+    handle_python_lib(args.module, is_root=True, path=args.output, sub_modules_list=args.sub_modules)
