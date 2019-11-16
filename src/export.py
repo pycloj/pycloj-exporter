@@ -63,7 +63,7 @@ def handle_function(module_name, fn_name, fn):
     except Exception as e:
       print(e)
       return ""
-
+    # sig = inspect.signature(fn)
     positional_args = get_positional_args(sig)
     kw_args, defaults = get_keyword_args(sig)
 
