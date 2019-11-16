@@ -28,14 +28,14 @@ def get_sub_modules(the_module,module_name):
     # print (type(answer), answer[modname])
     # if answer[modname]:
     #   sub_modules.add(modname)
-  sub_modules.add(modname)
+    sub_modules.add(modname)
   return sub_modules
 
 
 def get_positional_args(sig):
     params = []
     for param in sig.parameters.values():
-        if param.kind == inspect.Parameter.POSITIONAL_ONLY:
+        if param.kind == inspect.Parameter.POSITIONAL_ONLY or param.name =="self":
             params.append(param.name)
     return " ".join(params)
 
@@ -47,7 +47,7 @@ def get_keyword_args(sig):
     params = []
     defaults = []
     for p in sig.parameters.values():
-        if p.kind in [inspect.Parameter.KEYWORD_ONLY,inspect.Parameter.POSITIONAL_OR_KEYWORD]:
+        if p.kind in [inspect.Parameter.KEYWORD_ONLY,inspect.Parameter.POSITIONAL_OR_KEYWORD] and p.name != "self":
             params.append(p.name)
             if p.default != inspect._empty and p.default != None:
                 defaults.append(p.name)

@@ -16,11 +16,12 @@ This project is in an initial stage
 2. Show how to use it in exampled
 3. explain how to use the utility
 4. export python tests and use them over clojure
+5. replace PyInquirer with sompthing that works on python3.6
+6. generate exmple with a test/ exmple project that uses the code
 
 
-
-##
-bugs to solve
+### bugs to solve
 1. files are created twice 
-2. in class we need to handle self differently
-3. :or {self <class 'inspect._empty'> layer <class 'inspect._empty'>}} ]
+
+
+

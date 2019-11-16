@@ -1,5 +1,3 @@
-
-
 from templates import (method_positional, 
                                   method_kw,
                                   method_kw_defaults, 
@@ -8,6 +6,11 @@ from templates import (method_positional,
                                   project_tpl,
                                   source_file_head
                                   )
+
+def py2clojure_function_name(fname):
+  # return fname.loawer().replace("_","-")
+  return fname.replace("_","-")
+
 
 def get_project(project, version):
   return project_tpl.substitute({"project":project, "version":version})
@@ -21,6 +24,7 @@ def get_function(module_name, function_name, positional_args="", kw_args="", def
     return method_positional_kw_defaults.substitute({
       "docstring":docstring,
       "function_name":function_name,
+      "clj_function_name":py2clojure_function_name(function_name),
       "module_name":module_name,
       "positional_args":positional_args,
       "kw_args":kw_args,
@@ -30,6 +34,7 @@ def get_function(module_name, function_name, positional_args="", kw_args="", def
     return method_positional_kw.substitute({
       "module_name":module_name,
       "function_name":function_name,
+      "clj_function_name":py2clojure_function_name(function_name),
       "docstring":docstring,
       "positional_args":positional_args,
       "kw_args":kw_args
@@ -38,6 +43,7 @@ def get_function(module_name, function_name, positional_args="", kw_args="", def
     return method_kw_defaults.substitute({
       "module_name":module_name,
       "function_name":function_name,
+      "clj_function_name":py2clojure_function_name(function_name),
       "docstring":docstring,
       "positional_args":positional_args,
       "kw_args":kw_args,
@@ -47,6 +53,7 @@ def get_function(module_name, function_name, positional_args="", kw_args="", def
     return method_kw.substitute({
       "module_name":module_name,
       "function_name":function_name,
+      "clj_function_name":py2clojure_function_name(function_name),
       "docstring":docstring,
       "kw_args":kw_args
     })
@@ -54,6 +61,7 @@ def get_function(module_name, function_name, positional_args="", kw_args="", def
     return method_positional.substitute({
       "module_name":module_name,
       "function_name":function_name,
+      "clj_function_name":py2clojure_function_name(function_name),
       "docstring":docstring,
       "positional_args":positional_args
     })
@@ -61,6 +69,7 @@ def get_function(module_name, function_name, positional_args="", kw_args="", def
       return method_positional.substitute({
       "module_name":module_name,
       "function_name":function_name,
+      "clj_function_name":py2clojure_function_name(function_name),
       "docstring":docstring,
       "positional_args":positional_args
     })
