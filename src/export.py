@@ -2,7 +2,7 @@ import inspect
 import types
 import argparse
 import os
-from PyInquirer import prompt
+# from PyInquirer import prompt
 from distutils.dir_util import mkpath
 import pkgutil
 from template import (get_project, get_function, get_source_file_head)
@@ -14,21 +14,21 @@ elements_exported = set()
 def get_sub_modules(the_module,module_name):
   sub_modules = set()
   for importer, modname, ispkg in pkgutil.walk_packages(path=the_module.__path__):
-    questions = [
-    {
-        'type': 'confirm',
-        'name': modname,
-        'message': f'import sub module {module_name}.{modname}',
-        'default': False
-    }
+    # questions = [
+    # {
+    #     'type': 'confirm',
+    #     'name': modname,
+    #     'message': f'import sub module {module_name}.{modname}',
+    #     'default': False
+    # }
 
-    ]
-    answer = prompt(questions)
-    print (answer)
-    print (type(answer), answer[modname])
-    if answer[modname]:
-      sub_modules.add(modname)
-  
+    # ]
+    # answer = prompt(questions)
+    # print (answer)
+    # print (type(answer), answer[modname])
+    # if answer[modname]:
+    #   sub_modules.add(modname)
+  sub_modules.add(modname)
   return sub_modules
 
 
