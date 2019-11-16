@@ -18,7 +18,7 @@ This project is in an initial stage
 4. export python tests and use them over clojure
 5. replace PyInquirer with sompthing that works on python3.6
 6. generate exmple with a test/ exmple project that uses the code
-
+7. handle properties
 
 ### bugs to solve
 1. files are created twice 

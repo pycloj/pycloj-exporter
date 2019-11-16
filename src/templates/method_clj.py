@@ -31,3 +31,8 @@ method_positional_kw_defaults = Template('''
   "$docstring"
    (py/call-attr-kw $module_name "$function_name" [] {$kw_args})
 ''')
+property_tpl = Template('''
+(defn $clj_property_name [ self ]
+  "$docstring"
+   (py/call-attr $module_name "$property_name"  self)
+''')

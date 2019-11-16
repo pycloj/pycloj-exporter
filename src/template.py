@@ -4,7 +4,8 @@ from templates import (method_positional,
                                   method_positional_kw, 
                                   method_positional_kw_defaults, 
                                   project_tpl,
-                                  source_file_head
+                                  source_file_head,
+                                  property_tpl
                                   )
 
 def py2clojure_function_name(fname):
@@ -19,6 +20,15 @@ def get_project(project, version):
 def get_source_file_head(namespace, module_name, docstring):
   return source_file_head.substitute({"namespace":namespace, "module_name":module_name,"docstring":docstring})
 
+
+def get_property(module_name, property_name, docstring=""):
+  return property_tpl.substitute({
+      "docstring":docstring,
+      "property_name":property_name,
+      "module_name":module_name,
+      "clj_property_name":py2clojure_function_name(property_name)
+    })
+  
 def get_function(module_name, function_name, positional_args="", kw_args="", defaults="", docstring=""):
   if positional_args and kw_args and defaults:
     return method_positional_kw_defaults.substitute({

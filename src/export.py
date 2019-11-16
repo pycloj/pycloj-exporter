@@ -5,7 +5,7 @@ import os
 # from PyInquirer import prompt
 from distutils.dir_util import mkpath
 import pkgutil
-from template import (get_project, get_function, get_source_file_head)
+from template import (get_project, get_function, get_source_file_head, get_property)
 
 PYCLJ_VERSION = "0.1"
 
@@ -76,7 +76,10 @@ def handle_function(module_name, fn_name, fn):
                         docstring=fn.__doc__)
 
 
-
+def handle_property(module_name,property_name, proprty_el):
+  return get_property(module_name,
+                        property_name,
+                        docstring=proprty_el.__doc__)
 
 
 def handle_class(module_name, src_path, clss_name, clss):
@@ -103,11 +106,12 @@ def handle_class(module_name, src_path, clss_name, clss):
         # data+= [f";function {e[0]} {str(e[1])}"]
       elif isinstance(e[1], property):
         # res = handle_function(module_name, e[0], e[1])
-        data+= [f";property {e[0]} {e[1]}\n"]
+        res = handle_property(module_name, e[0], e[1])
+        data += res
       else:
         # res = handle_function(module_name, e[0], e[1])
-        data+= [f";what am I else{e[0]} {e[1]} ?\n"]
-      
+        # data+= [f";what am I else{e[0]} {e[1]} ?\n"]
+        pass
       
 
 
