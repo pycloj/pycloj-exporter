@@ -25,8 +25,8 @@ def is_importable(mlist):
     try:
       mod = __import__(m)
       imp_mod.add(m)
-    except:
-      pass
+    except Exception as e:
+      print(e)
   return imp_mod
 
 def get_sub_modules_recursive(module_name,skip_underscore=True, level=4):

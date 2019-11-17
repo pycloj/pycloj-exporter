@@ -6,22 +6,47 @@ import os
 from distutils.dir_util import mkpath
 import pkgutil
 from template import (get_project, get_function, get_source_file_head, get_property, get_class_file_head, get_reference_element)
-from utils import get_sub_modules_recursive
 
 PYCLJ_VERSION = "0.1"
 
-classes_exported = set()
+elements_exported = set()
 
-def create_reference_class(src_path,refering_module, the_class):
-  path_list = the_class.__module__.split(".")
-  class_name = [-1]
-  module_name = ".".join(path_list[:-1])
-  full_class_path = ".".join(path_list[:-1])
-  mkpath(os.path.join(src_path, refering_module.replace(".","/")))
-  ref_content = get_reference_element(refering_module, full_class_path, class_name)
-  
-  with open(os.path.join(src_path, refering_module.replace(".","/"), f"{class_name}.clj"), "w") as f:
+
+def is_reference(module_name, element):
+  print(module_name, element)
+  path = element.__module__
+  element_name = element.__name__
+  if f"{module_name}.{element_name}" == path:
+    return False
+  return True
+
+def create_reference_class(module_name, current_path, module_path, class_name):
+  ref_content = get_reference_element(module_name, module_path, class_name)
+  with open(os.path.join(current_path, f"{class_name}.clj"), "w") as f:
       f.writelines(ref_content)
+
+
+
+def get_sub_modules(the_module,module_name):
+  sub_modules = set()
+  for importer, modname, ispkg in pkgutil.walk_packages(path=the_module.__path__):
+    # questions = [
+    # {
+    #     'type': 'confirm',
+    #     'name': modname,
+    #     'message': f'import sub module {module_name}.{modname}',
+    #     'default': False
+    # }
+
+    # ]
+    # answer = prompt(questions)
+    # print (answer)
+    # print (type(answer), answer[modname])
+    # if answer[modname]:
+    #   sub_modules.add(modname)
+    sub_modules.add(modname)
+  return sub_modules
+
 
 def get_positional_args(sig):
     params = []
@@ -29,6 +54,10 @@ def get_positional_args(sig):
         if param.kind == inspect.Parameter.POSITIONAL_ONLY or param.name =="self":
             params.append(param.name)
     return " ".join(params)
+
+def to_clj_types(t):
+  if type(t) == bool:
+    return 
 
 def get_keyword_args(sig):
     params = []
@@ -69,45 +98,53 @@ def handle_property(module_name,property_name, proprty_el):
                         docstring=proprty_el.__doc__)
 
 
-def handle_class(src_path, the_class):
+def handle_class(module_name, src_path, clss_name, clss):
+    print("handle_class",module_name, src_path, clss_name, clss)
     data = []
     ignore = ['__call__', '__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__setstate__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__']
-    data += handle_function(the_class.__module__, the_class.__name__, the_class)
+    data += handle_function(module_name, clss_name, clss)
+
+  
     data.append(get_function)
-    elements = inspect.getmembers(the_class)
+    elements = inspect.getmembers(clss)
     for e in elements:
       #skipping members that start with a _
       if e[0][0] == "_":
+      #    data+=f";skiping {e[0]} \n" 
         pass
       #TODO: class method
       # elif inspect.ismethod(e[1]):
       #   # res = handle_function(module_name, e[0], e[1])
       #   data+= [f";{e[0]}\n"]
       elif inspect.isfunction(e[1]):
-        res = handle_function(the_class.__module__, e[0], e[1])
+        res = handle_function(module_name, e[0], e[1])
         data+= [res]
+        # data+= [f";function {e[0]} {str(e[1])}"]
       elif isinstance(e[1], property):
-        res = handle_property(the_class.__module__, e[0], e[1])
+        # res = handle_function(module_name, e[0], e[1])
+        res = handle_property(module_name, e[0], e[1])
         data += res
       else:
         # res = handle_function(module_name, e[0], e[1])
         # data+= [f";what am I else{e[0]} {e[1]} ?\n"]
         pass
-    path_list = the_class.__module__.split(".")
-    class_name = [-1]
-    module_name = ".".join(path_list[:-1])
-    mkpath(os.path.join(src_path,module_name.replace(".","/")))
-    file_head = get_class_file_head(f"{module_name}", the_class.__name__,
-                                     the_class.__doc__, str(the_class))
+      
 
-    mkpath(os.path.join(src_path, the_class.__module__.replace(".","/")))
-    with open(os.path.join(src_path,the_class.__module__.replace(".","/"), f"{the_class.__name__}.clj"), "w") as f:
+
+    
+    # file_head = get_source_file_head(f"{module_name}", clss_name,
+    #                                  clss.__doc__)
+    file_head = get_class_file_head(f"{module_name}", clss_name,
+                                     clss.__doc__, str(clss))
+
+    with open(os.path.join(src_path, f"{clss_name}.clj"), "w") as f:
         f.writelines(file_head)
         for line in data:
           try:
             f.writelines(line)
           except:
-            print("!!!! failed to write", line)
+            print(line)
+            # exit(0)
       
 
 
@@ -117,7 +154,7 @@ def handle_class(src_path, the_class):
 
 def handle_module(module_name,
                             src_path,
-                            the_module):
+                            the_module, base_module=""):
     data = []
 
     for element in inspect.getmembers(the_module):
@@ -127,20 +164,37 @@ def handle_module(module_name,
                 '__spec__', '__version__'
         ]:
             pass
+        # elif element in elements_exported:
+        #   continue
         elif element[0] == "__doc__":
             data.append(element[1])
             #elements_exported.add(element)
         elif inspect.isclass(element[1]):
-            if element[1] in classes_exported:
-              create_reference_class(src_path, module_name, element[1])
+            if is_reference(module_name, element[1]):
+              create_reference_class(module_name, src_path, element[1].__module__, element[1].__name__)
+              # data.append(get_reference_element(module_name, element[1].__module__, element[1].__name__))
             else:
-              handle_class(src_path, element[1])
-              classes_exported.add(element[1])
-              create_reference_class(src_path, module_name, element[1])
+              handle_class(module_name, src_path ,element[0], element[1])
+            #elements_exported.add(element)
+        #     elements_exported.add(element)
+        # elif inspect.ismethod(element[1]):
+        #     data += handle_class_method(the_module, element)
+        # elif inspect.isabstract(element[1]):
+        #     print(f"{element[0]} is an abstruct class - skip")
         elif inspect.isfunction(element[1]):
+            # if is_reference(module_name, element[1]):
+            #   data.append(get_reference_element(module_name, element[1].__module__, element[1].__name__))
+            # else:
             data += handle_function(module_name, element[0],element[1])
-    file_head = get_source_file_head(module_name, module_name,
+            
+            #elements_exported.add(element)
+    if base_module:
+      namespace = f"{base_module}.{module_name}"
+    else:
+      namespace = module_name
+    file_head = get_source_file_head(namespace, module_name,
                                      the_module.__doc__)
+    print(src_path,f"{module_name}.clj")
     with open(os.path.join(src_path, f"{module_name}.clj"), "w") as f:
         f.writelines(file_head)
         for line in data:
@@ -165,7 +219,6 @@ def handle_python_lib(module_name, path="", is_root=False, rename_path=True, sub
         print(f"pip install {module_name}")
         print(f"or verify that the right virtualenv is active")
         exit(-1)
-    
     globals()[module_name] = the_module
     version = the_module.__version__
     data = []
@@ -195,15 +248,17 @@ def handle_python_lib(module_name, path="", is_root=False, rename_path=True, sub
     test_path = os.path.join(path, "test")
     mkpath(test_path)
     if not sub_modules_list or len(sub_modules_list) == 0:
-      sub_modules, _ = get_sub_modules_recursive(module_name)
+      sub_modules = get_sub_modules(the_module, module_name)
     else:
       sub_modules = set(sub_modules_list)
-      sub_modules.add(module_name)
+    handle_module(module_name,
+                            src_path,
+                            the_module)
     for m in sub_modules:
-      p = mkpath(os.path.join(src_path, m.replace(".","/")))
-      mod = __import__(m)
+      p = mkpath(os.path.join(src_path, m))[0]
+      mod = __import__(module_name)
       globals()[m] = mod
-      handle_module(m,src_path, mod)
+      handle_module(m,p, mod, base_module=module_name)
 
 
     
