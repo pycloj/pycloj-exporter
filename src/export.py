@@ -14,7 +14,7 @@ classes_exported = set()
 
 def create_reference_class(src_path,refering_module, the_class):
   path_list = the_class.__module__.split(".")
-  class_name = [-1]
+  class_name = path_list[-1]
   module_name = ".".join(path_list[:-1])
   full_class_path = ".".join(path_list[:-1])
   mkpath(os.path.join(src_path, refering_module.replace(".","/")))
@@ -96,7 +96,6 @@ def handle_class(src_path, the_class):
     path_list = the_class.__module__.split(".")
     class_name = [-1]
     module_name = ".".join(path_list[:-1])
-    mkpath(os.path.join(src_path,module_name.replace(".","/")))
     file_head = get_class_file_head(f"{module_name}", the_class.__name__,
                                      the_class.__doc__, str(the_class))
 
