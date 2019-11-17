@@ -10,26 +10,26 @@ method_positional = Template('''
 method_kw = Template('''
 (defn $clj_function_name [ & {:keys [$kw_args]} ]
   "$docstring"
-   (py/call-attr-kw $module_name "$function_name" [] {$kw_args})
+   (py/call-attr-kw $module_name "$function_name" [] {$kw_args_call_format})
 ''')
  
 method_kw_defaults = Template('''
 (defn $clj_function_name [ & {:keys [$kw_args]
                           :or {$defaults}} ]
   "$docstring"
-   (py/call-attr-kw $module_name "$function_name" [] {$kw_args})
+   (py/call-attr-kw $module_name "$function_name" [] {$kw_args_call_format})
 ''')
 method_positional_kw = Template('''
 (defn $clj_function_name [$positional_args  & {:keys [$kw_args]} ]
   "$docstring"
-   (py/call-attr-kw $module_name "$function_name" [$positional_args] {$kw_args})
+   (py/call-attr-kw $module_name "$function_name" [$positional_args] {$kw_args_call_format})
 ''')
 
 method_positional_kw_defaults = Template('''
 (defn $clj_function_name [$positional_args & {:keys [$kw_args]
                           :or {$defaults} ]
   "$docstring"
-   (py/call-attr-kw $module_name "$function_name" [] {$kw_args})
+   (py/call-attr-kw $module_name "$function_name" [] {$kw_args_call_format})
 ''')
 property_tpl = Template('''
 (defn $clj_property_name [ self ]

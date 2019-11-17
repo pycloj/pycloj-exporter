@@ -5,8 +5,19 @@ from templates import (method_positional,
                                   method_positional_kw_defaults, 
                                   project_tpl,
                                   source_file_head,
-                                  property_tpl
+                                  class_file_head,
+                                  property_tpl,
+                                  reference_element_tpl
                                   )
+
+def kwargs_to_call_format(kwargs_str):
+  kw_args = kwargs_str.split(" ")
+  call_format = ""
+  for a in kw_args:
+    call_format+= f":{a} {a} "
+  return call_format
+
+  
 
 def py2clojure_function_name(fname):
   # return fname.loawer().replace("_","-")
@@ -20,6 +31,13 @@ def get_project(project, version):
 def get_source_file_head(namespace, module_name, docstring):
   return source_file_head.substitute({"namespace":namespace, "module_name":module_name,"docstring":docstring})
 
+def get_class_file_head(namespace, module_name, docstring, cls):
+  return source_file_head.substitute({"namespace":namespace,
+   "module_name":module_name,
+   "docstring":docstring,
+   "cls":cls
+   })
+
 
 def get_property(module_name, property_name, docstring=""):
   return property_tpl.substitute({
@@ -27,6 +45,13 @@ def get_property(module_name, property_name, docstring=""):
       "property_name":property_name,
       "module_name":module_name,
       "clj_property_name":py2clojure_function_name(property_name)
+    })
+
+def get_reference_element(refering_module, full_class_path, class_name):
+  return reference_element_tpl.substitute({
+      "refering_module":refering_module,
+      "full_class_path":full_class_path,
+      "class_name":class_name
     })
   
 def get_function(module_name, function_name, positional_args="", kw_args="", defaults="", docstring=""):
@@ -38,6 +63,7 @@ def get_function(module_name, function_name, positional_args="", kw_args="", def
       "module_name":module_name,
       "positional_args":positional_args,
       "kw_args":kw_args,
+      "kw_args_call_format": kwargs_to_call_format(kw_args),
       "defaults":defaults
     })
   elif positional_args and kw_args:
@@ -47,6 +73,7 @@ def get_function(module_name, function_name, positional_args="", kw_args="", def
       "clj_function_name":py2clojure_function_name(function_name),
       "docstring":docstring,
       "positional_args":positional_args,
+      "kw_args_call_format": kwargs_to_call_format(kw_args),
       "kw_args":kw_args
     })
   elif  defaults and kw_args:
@@ -57,6 +84,7 @@ def get_function(module_name, function_name, positional_args="", kw_args="", def
       "docstring":docstring,
       "positional_args":positional_args,
       "kw_args":kw_args,
+      "kw_args_call_format": kwargs_to_call_format(kw_args),
       "defaults":defaults
     })
   elif kw_args:
@@ -65,6 +93,7 @@ def get_function(module_name, function_name, positional_args="", kw_args="", def
       "function_name":function_name,
       "clj_function_name":py2clojure_function_name(function_name),
       "docstring":docstring,
+      "kw_args_call_format": kwargs_to_call_format(kw_args),
       "kw_args":kw_args
     })
   elif positional_args:
@@ -73,6 +102,7 @@ def get_function(module_name, function_name, positional_args="", kw_args="", def
       "function_name":function_name,
       "clj_function_name":py2clojure_function_name(function_name),
       "docstring":docstring,
+      "kw_args_call_format": kwargs_to_call_format(kw_args),
       "positional_args":positional_args
     })
   else:
@@ -81,6 +111,7 @@ def get_function(module_name, function_name, positional_args="", kw_args="", def
       "function_name":function_name,
       "clj_function_name":py2clojure_function_name(function_name),
       "docstring":docstring,
+      "kw_args_call_format": kwargs_to_call_format(kw_args),
       "positional_args":positional_args
     })
 

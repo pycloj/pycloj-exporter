@@ -5,11 +5,27 @@ import os
 # from PyInquirer import prompt
 from distutils.dir_util import mkpath
 import pkgutil
-from template import (get_project, get_function, get_source_file_head, get_property)
+from template import (get_project, get_function, get_source_file_head, get_property, get_class_file_head, get_reference_element)
 
 PYCLJ_VERSION = "0.1"
 
 elements_exported = set()
+
+
+def is_reference(module_name, element):
+  print(module_name, element)
+  path = element.__module__
+  element_name = element.__name__
+  if f"{module_name}.{element_name}" == path:
+    return False
+  return True
+
+def create_reference_class(module_name, current_path, module_path, class_name):
+  ref_content = get_reference_element(module_name, module_path, class_name)
+  with open(os.path.join(current_path, f"{class_name}.clj"), "w") as f:
+      f.writelines(ref_content)
+
+
 
 def get_sub_modules(the_module,module_name):
   sub_modules = set()
@@ -116,8 +132,11 @@ def handle_class(module_name, src_path, clss_name, clss):
 
 
     
-    file_head = get_source_file_head(f"{module_name}.{clss_name}", clss_name,
-                                     clss.__doc__)
+    # file_head = get_source_file_head(f"{module_name}", clss_name,
+    #                                  clss.__doc__)
+    file_head = get_class_file_head(f"{module_name}", clss_name,
+                                     clss.__doc__, str(clss))
+
     with open(os.path.join(src_path, f"{clss_name}.clj"), "w") as f:
         f.writelines(file_head)
         for line in data:
@@ -145,21 +164,30 @@ def handle_module(module_name,
                 '__spec__', '__version__'
         ]:
             pass
-        elif element in elements_exported:
-          continue
+        # elif element in elements_exported:
+        #   continue
         elif element[0] == "__doc__":
             data.append(element[1])
-            elements_exported.add(element)
+            #elements_exported.add(element)
         elif inspect.isclass(element[1]):
-            handle_class(module_name, src_path ,element[0], element[1])
+            if is_reference(module_name, element[1]):
+              create_reference_class(module_name, src_path, element[1].__module__, element[1].__name__)
+              # data.append(get_reference_element(module_name, element[1].__module__, element[1].__name__))
+            else:
+              handle_class(module_name, src_path ,element[0], element[1])
+            #elements_exported.add(element)
         #     elements_exported.add(element)
         # elif inspect.ismethod(element[1]):
         #     data += handle_class_method(the_module, element)
         # elif inspect.isabstract(element[1]):
         #     print(f"{element[0]} is an abstruct class - skip")
         elif inspect.isfunction(element[1]):
+            # if is_reference(module_name, element[1]):
+            #   data.append(get_reference_element(module_name, element[1].__module__, element[1].__name__))
+            # else:
             data += handle_function(module_name, element[0],element[1])
-            elements_exported.add(element)
+            
+            #elements_exported.add(element)
     if base_module:
       namespace = f"{base_module}.{module_name}"
     else:
@@ -171,6 +199,12 @@ def handle_module(module_name,
         f.writelines(file_head)
         for line in data:
           f.writelines(line)
+
+    
+def get_sub_module(the_module):
+  path
+
+  
 
 
 
@@ -249,6 +283,7 @@ if __name__ == "__main__":
     parser.add_argument("--sub-modules",
                         type=list,
                         help="list of submodule to import",
+                        # default=["models"])
                         default=[])
 
     args = parser.parse_args()
