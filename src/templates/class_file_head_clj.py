@@ -1,7 +1,5 @@
 from string import Template
 class_file_head = Template('''
-
-;$cls
 (ns $namespace
   "$docstring"
   (:require [libpython-clj.python
@@ -19,5 +17,5 @@ class_file_head = Template('''
             [clojure.pprint :as pp]))
 
 (py/initialize!)
-(defonce $module_name (import-module "$module_name"))
+(defonce $module_name (import-module "$full_import_path"))
 ''')

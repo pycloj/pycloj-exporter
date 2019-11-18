@@ -93,6 +93,10 @@ def handle_class(src_path, the_class):
                             the_class)
     data.append(get_function)
     elements = inspect.getmembers(the_class)
+    path_list = the_class.__module__.split(".")
+    class_file = path_list[-1]
+    module_name = path_list[-1]
+
     for e in elements:
         #skipping members that start with a _
         if e[0][0] == "_":
@@ -102,21 +106,19 @@ def handle_class(src_path, the_class):
         #   # res = handle_function(module_name, e[0], e[1])
         #   data+= [f";{e[0]}\n"]
         elif inspect.isfunction(e[1]):
-            res = handle_function(the_class.__module__, e[0], e[1])
+            res = handle_function(module_name, e[0], e[1])
             data += [res]
         elif isinstance(e[1], property):
-            res = handle_property(the_class.__module__, e[0], e[1])
+            res = handle_property(module_name, e[0], e[1])
             data += res
         else:
             # res = handle_function(module_name, e[0], e[1])
             # data+= [f";what am I else{e[0]} {e[1]} ?\n"]
             pass
-    path_list = the_class.__module__.split(".")
-    class_name = [-1]
-    module_name = ".".join(path_list[:-1])
-    file_head = get_class_file_head(f"{module_name}", the_class.__name__,
-                                    the_class.__doc__, str(the_class))
+    
 
+    
+    file_head = get_class_file_head( f"{the_class.__module__}.{the_class.__name__}", module_name, the_class.__module__, the_class.__doc__)
     mkpath(os.path.join(src_path, the_class.__module__.replace(".", "/")))
     with open(
             os.path.join(src_path, the_class.__module__.replace(".", "/"),
@@ -153,10 +155,13 @@ def handle_module(module_name, src_path, the_module):
             data += handle_function(module_name, element[0], element[1])
     file_head = get_source_file_head(module_name, module_name,
                                      the_module.__doc__)
-    with open(os.path.join(src_path, module_name.replace(".", "/")), "w") as f:
-        f.writelines(file_head)
-        for line in data:
-            f.writelines(line)
+    
+    # mkpath(os.path.join(src_path, ))
+    if len(data) >0:
+      with open(os.path.join(src_path, module_name.replace(".", "/"))+ ".clj", "w") as f:
+          f.writelines(file_head)
+          for line in data:
+              f.writelines(line)
 
 
 def handle_python_lib(module_name,

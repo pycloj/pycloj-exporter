@@ -1,125 +1,188 @@
-from templates import (method_positional, 
-                                  method_kw,
-                                  method_kw_defaults, 
-                                  method_positional_kw, 
-                                  method_positional_kw_defaults, 
-                                  project_tpl,
-                                  source_file_head,
-                                  class_file_head,
-                                  property_tpl,
-                                  reference_element_tpl
-                                  )
+from templates import (method_positional, method_kw, method_kw_defaults,
+                       method_positional_kw, method_positional_kw_defaults,
+                       project_tpl, source_file_head, class_file_head,
+                       property_tpl, reference_element_tpl)
+
 
 def kwargs_to_call_format(kwargs_str):
-  kw_args = kwargs_str.split(" ")
-  call_format = ""
-  for a in kw_args:
-    call_format+= f":{a} {a} "
-  return call_format
+    kw_args = kwargs_str.split(" ")
+    call_format = ""
+    for a in kw_args:
+        call_format += f":{a} {a} "
+    return call_format
 
-  
 
 def py2clojure_function_name(fname):
-  # return fname.loawer().replace("_","-")
-  return fname.replace("_","-")
+    # return fname.loawer().replace("_","-")
+    return fname.replace("_", "-")
 
 
 def get_project(project, version):
-  return project_tpl.substitute({"project":project, "version":version})
+    return project_tpl.substitute({"project": project, "version": version})
 
 
 def get_source_file_head(namespace, module_name, docstring):
-  return source_file_head.substitute({"namespace":namespace, "module_name":module_name,"docstring":docstring})
+    return source_file_head.substitute({
+        "namespace": namespace,
+        "module_name": module_name,
+        "docstring": docstring
+    })
 
-def get_class_file_head(namespace, module_name, docstring, cls):
-  return source_file_head.substitute({"namespace":namespace,
-   "module_name":module_name,
-   "docstring":docstring,
-   "cls":cls
-   })
+
+def get_class_file_head(namespace, module_name, full_import_path, docstring):
+    return class_file_head.substitute({
+        "namespace": namespace,
+        "module_name": module_name,
+        "docstring": docstring,
+        "full_import_path": full_import_path
+    })
 
 
 def get_property(module_name, property_name, docstring=""):
-  return property_tpl.substitute({
-      "docstring":docstring,
-      "property_name":property_name,
-      "module_name":module_name,
-      "clj_property_name":py2clojure_function_name(property_name)
+    return property_tpl.substitute({
+        "docstring":
+        docstring,
+        "property_name":
+        property_name,
+        "module_name":
+        module_name,
+        "clj_property_name":
+        py2clojure_function_name(property_name)
     })
+
 
 def get_reference_element(refering_module, full_class_path, class_name):
-  return reference_element_tpl.substitute({
-      "refering_module":refering_module,
-      "full_class_path":full_class_path,
-      "class_name":class_name
-    })
-  
-def get_function(module_name, function_name, positional_args="", kw_args="", defaults="", docstring=""):
-  if positional_args and kw_args and defaults:
-    return method_positional_kw_defaults.substitute({
-      "docstring":docstring,
-      "function_name":function_name,
-      "clj_function_name":py2clojure_function_name(function_name),
-      "module_name":module_name,
-      "positional_args":positional_args,
-      "kw_args":kw_args,
-      "kw_args_call_format": kwargs_to_call_format(kw_args),
-      "defaults":defaults
-    })
-  elif positional_args and kw_args:
-    return method_positional_kw.substitute({
-      "module_name":module_name,
-      "function_name":function_name,
-      "clj_function_name":py2clojure_function_name(function_name),
-      "docstring":docstring,
-      "positional_args":positional_args,
-      "kw_args_call_format": kwargs_to_call_format(kw_args),
-      "kw_args":kw_args
-    })
-  elif  defaults and kw_args:
-    return method_kw_defaults.substitute({
-      "module_name":module_name,
-      "function_name":function_name,
-      "clj_function_name":py2clojure_function_name(function_name),
-      "docstring":docstring,
-      "positional_args":positional_args,
-      "kw_args":kw_args,
-      "kw_args_call_format": kwargs_to_call_format(kw_args),
-      "defaults":defaults
-    })
-  elif kw_args:
-    return method_kw.substitute({
-      "module_name":module_name,
-      "function_name":function_name,
-      "clj_function_name":py2clojure_function_name(function_name),
-      "docstring":docstring,
-      "kw_args_call_format": kwargs_to_call_format(kw_args),
-      "kw_args":kw_args
-    })
-  elif positional_args:
-    return method_positional.substitute({
-      "module_name":module_name,
-      "function_name":function_name,
-      "clj_function_name":py2clojure_function_name(function_name),
-      "docstring":docstring,
-      "kw_args_call_format": kwargs_to_call_format(kw_args),
-      "positional_args":positional_args
-    })
-  else:
-      return method_positional.substitute({
-      "module_name":module_name,
-      "function_name":function_name,
-      "clj_function_name":py2clojure_function_name(function_name),
-      "docstring":docstring,
-      "kw_args_call_format": kwargs_to_call_format(kw_args),
-      "positional_args":positional_args
+    return reference_element_tpl.substitute({
+        "refering_module": refering_module,
+        "full_class_path": full_class_path,
+        "class_name": class_name
     })
 
+
+def get_function(module_name,
+                 function_name,
+                 positional_args="",
+                 kw_args="",
+                 defaults="",
+                 docstring=""):
+    if positional_args and kw_args and defaults:
+        return method_positional_kw_defaults.substitute({
+            "docstring":
+            docstring,
+            "function_name":
+            function_name,
+            "clj_function_name":
+            py2clojure_function_name(function_name),
+            "module_name":
+            module_name,
+            "positional_args":
+            positional_args,
+            "kw_args":
+            kw_args,
+            "kw_args_call_format":
+            kwargs_to_call_format(kw_args),
+            "defaults":
+            defaults
+        })
+    elif positional_args and kw_args:
+        return method_positional_kw.substitute({
+            "module_name":
+            module_name,
+            "function_name":
+            function_name,
+            "clj_function_name":
+            py2clojure_function_name(function_name),
+            "docstring":
+            docstring,
+            "positional_args":
+            positional_args,
+            "kw_args_call_format":
+            kwargs_to_call_format(kw_args),
+            "kw_args":
+            kw_args
+        })
+    elif defaults and kw_args:
+        return method_kw_defaults.substitute({
+            "module_name":
+            module_name,
+            "function_name":
+            function_name,
+            "clj_function_name":
+            py2clojure_function_name(function_name),
+            "docstring":
+            docstring,
+            "positional_args":
+            positional_args,
+            "kw_args":
+            kw_args,
+            "kw_args_call_format":
+            kwargs_to_call_format(kw_args),
+            "defaults":
+            defaults
+        })
+    elif kw_args:
+        return method_kw.substitute({
+            "module_name":
+            module_name,
+            "function_name":
+            function_name,
+            "clj_function_name":
+            py2clojure_function_name(function_name),
+            "docstring":
+            docstring,
+            "kw_args_call_format":
+            kwargs_to_call_format(kw_args),
+            "kw_args":
+            kw_args
+        })
+    elif positional_args:
+        return method_positional.substitute({
+            "module_name":
+            module_name,
+            "function_name":
+            function_name,
+            "clj_function_name":
+            py2clojure_function_name(function_name),
+            "docstring":
+            docstring,
+            "kw_args_call_format":
+            kwargs_to_call_format(kw_args),
+            "positional_args":
+            positional_args
+        })
+    else:
+        return method_positional.substitute({
+            "module_name":
+            module_name,
+            "function_name":
+            function_name,
+            "clj_function_name":
+            py2clojure_function_name(function_name),
+            "docstring":
+            docstring,
+            "kw_args_call_format":
+            kwargs_to_call_format(kw_args),
+            "positional_args":
+            positional_args
+        })
 
 
 if __name__ == "__main__":
-  print(get_source_file_head("keras", "keras"))
-  print(get_function("keras", "input", positional_args="a b c"))
-  print(get_function("keras", "input", positional_args="a b c", kw_args = "d e f"))
-  print(get_function("keras", "input", positional_args="a b c", kw_args = "d e f", defaults="e 1 f 2"))
-  print(get_function("keras", "input", positional_args="a b c",docstring="some docstring"))
+    print(get_source_file_head("keras", "keras"))
+    print(get_function("keras", "input", positional_args="a b c"))
+    print(
+        get_function("keras",
+                     "input",
+                     positional_args="a b c",
+                     kw_args="d e f"))
+    print(
+        get_function("keras",
+                     "input",
+                     positional_args="a b c",
+                     kw_args="d e f",
+                     defaults="e 1 f 2"))
+    print(
+        get_function("keras",
+                     "input",
+                     positional_args="a b c",
+                     docstring="some docstring"))
