@@ -9,7 +9,7 @@ from template import (get_project, get_function, get_source_file_head,
                       get_property, get_class_file_head, get_reference_element)
 from utils import get_sub_modules_recursive
 
-PYCLJ_VERSION = "0.1"
+from version import VERSION
 
 classes_exported = set()
 
@@ -185,7 +185,7 @@ def handle_python_lib(module_name,
     version = the_module.__version__
     data = []
     path = os.path.join(path, module_name,
-                        f"pyclj-{PYCLJ_VERSION}-{module_name}{version}")
+                        f"pyclj-{VERSION}-{module_name}{version}")
     if rename_path and is_root:
         if os.path.exists(path):
             for i in range(50):
@@ -199,7 +199,7 @@ def handle_python_lib(module_name,
     except:
         print(f"failed to create path: {path}")
         exit(-1)
-    project = get_project(f"pyclj-{module_name}", version)
+    project = get_project(f"pycloj/pycloj-{module_name}", f"{version}--AUTO-{VERSION}-SNAPSHOT")
     # print(project)
     with open(os.path.join(path, "project.clj"), "w") as f:
         f.writelines(project)
