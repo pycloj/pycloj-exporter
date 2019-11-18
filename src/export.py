@@ -20,8 +20,8 @@ def create_reference_class(src_path, refering_module, the_class):
     module_name = ".".join(path_list[:-1])
     full_class_path = ".".join(path_list[:-1])
     mkpath(os.path.join(src_path, refering_module.replace(".", "/")))
-    ref_content = get_reference_element(refering_module, full_class_path,
-                                        class_name)
+    ref_content = get_reference_element( the_class.__module__, the_class.__module__,
+                                        the_class.__name__)
 
     with open(
             os.path.join(src_path, refering_module.replace(".", "/"),
