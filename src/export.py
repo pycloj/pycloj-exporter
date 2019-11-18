@@ -20,7 +20,7 @@ def create_reference_class(src_path, refering_module, the_class):
     module_name = ".".join(path_list[:-1])
     full_class_path = ".".join(path_list[:-1])
     mkpath(os.path.join(src_path, refering_module.replace(".", "/")))
-    ref_content = get_reference_element( the_class.__module__, the_class.__module__,
+    ref_content = get_reference_element(f"{refering_module}.{the_class.__name__}", the_class.__module__,
                                         the_class.__name__)
 
     with open(
@@ -149,9 +149,10 @@ def handle_module(module_name, src_path, the_module):
             if element[1] in classes_exported:
                 create_reference_class(src_path, module_name, element[1])
             else:
+                create_reference_class(src_path, module_name, element[1])
                 handle_class(src_path, element[1])
                 classes_exported.add(element[1])
-                create_reference_class(src_path, module_name, element[1])
+               
         elif inspect.isfunction(element[1]):
             data += handle_function(module_name, element[0], element[1])
     file_head = get_source_file_head(module_name, module_name,
