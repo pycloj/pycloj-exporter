@@ -4,6 +4,10 @@ from templates import (method_positional, method_kw, method_kw_defaults,
                        property_tpl, reference_element_tpl)
 
 
+
+def protect_docstring(dstr):
+  return dstr.replace('"','\"')
+
 def kwargs_to_call_format(kwargs_str):
     kw_args = kwargs_str.split(" ")
     call_format = ""
@@ -25,7 +29,7 @@ def get_source_file_head(namespace, module_name, docstring):
     return source_file_head.substitute({
         "namespace": namespace,
         "module_name": module_name,
-        "docstring": docstring
+        "docstring": protect_docstring(docstring)
     })
 
 
@@ -33,7 +37,7 @@ def get_class_file_head(namespace, module_name, full_import_path, docstring):
     return class_file_head.substitute({
         "namespace": namespace,
         "module_name": module_name,
-        "docstring": docstring,
+        "docstring": protect_docstring(docstring),
         "full_import_path": full_import_path
     })
 
@@ -41,7 +45,7 @@ def get_class_file_head(namespace, module_name, full_import_path, docstring):
 def get_property(module_name, property_name, docstring=""):
     return property_tpl.substitute({
         "docstring":
-        docstring,
+        protect_docstring(docstring),
         "property_name":
         property_name,
         "module_name":
@@ -68,7 +72,7 @@ def get_function(module_name,
     if positional_args and kw_args and defaults:
         return method_positional_kw_defaults.substitute({
             "docstring":
-            docstring,
+            protect_docstring(docstring),
             "function_name":
             function_name,
             "clj_function_name":
@@ -93,7 +97,7 @@ def get_function(module_name,
             "clj_function_name":
             py2clojure_function_name(function_name),
             "docstring":
-            docstring,
+            protect_docstring(docstring),
             "positional_args":
             positional_args,
             "kw_args_call_format":
@@ -110,7 +114,7 @@ def get_function(module_name,
             "clj_function_name":
             py2clojure_function_name(function_name),
             "docstring":
-            docstring,
+            protect_docstring(docstring),
             "positional_args":
             positional_args,
             "kw_args":
@@ -129,7 +133,7 @@ def get_function(module_name,
             "clj_function_name":
             py2clojure_function_name(function_name),
             "docstring":
-            docstring,
+            protect_docstring(docstring),
             "kw_args_call_format":
             kwargs_to_call_format(kw_args),
             "kw_args":
@@ -144,7 +148,7 @@ def get_function(module_name,
             "clj_function_name":
             py2clojure_function_name(function_name),
             "docstring":
-            docstring,
+            protect_docstring(docstring),
             "kw_args_call_format":
             kwargs_to_call_format(kw_args),
             "positional_args":
@@ -159,13 +163,12 @@ def get_function(module_name,
             "clj_function_name":
             py2clojure_function_name(function_name),
             "docstring":
-            docstring,
+            protect_docstring(docstring),
             "kw_args_call_format":
             kwargs_to_call_format(kw_args),
             "positional_args":
             positional_args
         })
-
 
 if __name__ == "__main__":
     print(get_source_file_head("keras", "keras"))
