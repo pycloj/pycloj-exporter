@@ -89,13 +89,14 @@ def handle_class(src_path, the_class):
         '__reduce_ex__', '__repr__', '__setattr__', '__setstate__',
         '__sizeof__', '__str__', '__subclasshook__', '__weakref__'
     ]
-    data += handle_function(the_class.__module__, the_class.__name__,
-                            the_class)
+    
     data.append(get_function)
     elements = inspect.getmembers(the_class)
     path_list = the_class.__module__.split(".")
     class_file = path_list[-1]
     module_name = path_list[-1]
+    data += handle_function(module_name, the_class.__name__,
+                            the_class)
 
     for e in elements:
         #skipping members that start with a _
