@@ -6,7 +6,10 @@ from templates import (method_positional, method_kw, method_kw_defaults,
 
 
 def protect_docstring(dstr):
-  return dstr.replace('"','\"')
+  if dstr and type(dstr) == str:
+    return dstr.replace('"','\\"')
+  else:
+    return ""
 
 def kwargs_to_call_format(kwargs_str):
     kw_args = kwargs_str.split(" ")
