@@ -2,7 +2,32 @@
 
 exporting python modole to be used in clojure with libpython-clj
 
-This project is in an initial stage 
+This project is in an initial stage we expect it to change.
+
+## Usage
+
+Install the python library you intent to export to clojure. 
+
+for example if you wnat to export keras
+pip install keras
+or 
+conda install keras
+
+
+cd src
+python export.py keras
+
+this will generate folders in output/package/pyclj-0.1-keras-THE_KERAS_VERSION
+
+### arguments
+to get full argument list  
+python export.py -h 
+
+important argument is --sub-modules
+if for example you want to export keras but you are only interested in functions and classes under models and layers
+
+
+
 
 
 

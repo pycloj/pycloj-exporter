@@ -213,6 +213,7 @@ def handle_python_lib(module_name,
     if not sub_modules_list or len(sub_modules_list) == 0:
         sub_modules, _ = get_sub_modules_recursive(module_name)
     else:
+        print(f"modules = {sub_modules_list}")
         sub_modules = set(sub_modules_list)
         sub_modules.add(module_name)
     for m in sub_modules:
@@ -240,13 +241,14 @@ if __name__ == "__main__":
                         default=False)
     parser.add_argument(
         "--sub-modules",
-        type=list,
+        type=str,
         help="list of submodule to import",
         # default=["models"])
-        default=[])
+        default='')
 
     args = parser.parse_args()
+    sub_modules = args.sub_modules.split(",")
     handle_python_lib(args.module,
                       is_root=True,
                       path=args.output,
-                      sub_modules_list=args.sub_modules)
+                      sub_modules_list=sub_modules)
