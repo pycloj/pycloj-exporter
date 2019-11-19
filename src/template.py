@@ -1,7 +1,9 @@
 from templates import (method_positional, method_kw, method_kw_defaults,
                        method_positional_kw, method_positional_kw_defaults,
                        project_tpl, source_file_head, class_file_head,
-                       property_tpl, reference_element_tpl)
+                       property_tpl, reference_element_tpl, reference_member_tpl)
+
+
 
 
 
@@ -173,22 +175,31 @@ def get_function(module_name,
             positional_args
         })
 
-if __name__ == "__main__":
-    print(get_source_file_head("keras", "keras"))
-    print(get_function("keras", "input", positional_args="a b c"))
-    print(
-        get_function("keras",
-                     "input",
-                     positional_args="a b c",
-                     kw_args="d e f"))
-    print(
-        get_function("keras",
-                     "input",
-                     positional_args="a b c",
-                     kw_args="d e f",
-                     defaults="e 1 f 2"))
-    print(
-        get_function("keras",
-                     "input",
-                     positional_args="a b c",
-                     docstring="some docstring"))
+def get_reference_member(member_name,full_class_path):
+  return reference_member_tpl.substitute({
+        "member_name": py2clojure_function_name(member_name),
+        "full_class_path": full_class_path
+    })
+
+
+
+
+# if __name__ == "__main__":
+#     print(get_source_file_head("keras", "keras"))
+#     print(get_function("keras", "input", positional_args="a b c"))
+#     print(
+#         get_function("keras",
+#                      "input",
+#                      positional_args="a b c",
+#                      kw_args="d e f"))
+#     print(
+#         get_function("keras",
+#                      "input",
+#                      positional_args="a b c",
+#                      kw_args="d e f",
+#                      defaults="e 1 f 2"))
+#     print(
+#         get_function("keras",
+#                      "input",
+#                      positional_args="a b c",
+#                      docstring="some docstring"))

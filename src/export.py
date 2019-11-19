@@ -6,12 +6,14 @@ import os
 from distutils.dir_util import mkpath
 import pkgutil
 from template import (get_project, get_function, get_source_file_head,
-                      get_property, get_class_file_head, get_reference_element)
+                      get_property, get_class_file_head, get_reference_element,
+                      get_reference_member)
 from utils import get_sub_modules_recursive
 
 from version import VERSION
 
 classes_exported = set()
+classes_members = {}
 
 
 def create_reference_class(src_path, refering_module, the_class):
@@ -20,13 +22,25 @@ def create_reference_class(src_path, refering_module, the_class):
     module_name = ".".join(path_list[:-1])
     full_class_path = ".".join(path_list[:-1])
     mkpath(os.path.join(src_path, refering_module.replace(".", "/")))
-    ref_content = get_reference_element(f"{refering_module}.{the_class.__name__}", the_class.__module__,
-                                        the_class.__name__)
+    ref_content = get_reference_element(
+        f"{refering_module}.{the_class.__name__}", the_class.__module__,
+        the_class.__name__)
+
+    members_def = []
+    print(classes_members, refering_module, the_class)
+    members = classes_members.get(
+        f"{the_class.__module__}.{the_class.__name__}",[])
+    for m in members:
+        members_def.append(
+            get_reference_member(
+                m, f"{the_class.__module__}.{the_class.__name__}"))
 
     with open(
             os.path.join(src_path, refering_module.replace(".", "/"),
                          f"{class_name}.clj"), "w") as f:
         f.writelines(ref_content)
+        for mdef in members_def:
+          f.writelines(mdef)
 
 
 def get_positional_args(sig):
@@ -79,6 +93,14 @@ def handle_property(module_name, property_name, proprty_el):
                         docstring=proprty_el.__doc__)
 
 
+def add_class_member(class_path, member):
+    print("in class members", class_path,member)
+    cls_members = classes_members.get(class_path)
+    if not cls_members:
+        classes_members[class_path] = []
+    classes_members[class_path].append(member)
+
+
 def handle_class(src_path, the_class):
     data = []
     ignore = [
@@ -89,14 +111,13 @@ def handle_class(src_path, the_class):
         '__reduce_ex__', '__repr__', '__setattr__', '__setstate__',
         '__sizeof__', '__str__', '__subclasshook__', '__weakref__'
     ]
-    
+
     data.append(get_function)
     elements = inspect.getmembers(the_class)
     path_list = the_class.__module__.split(".")
     class_file = path_list[-1]
     module_name = path_list[-1]
-    data += handle_function(module_name, the_class.__name__,
-                            the_class)
+    data += handle_function(module_name, the_class.__name__, the_class)
 
     for e in elements:
         #skipping members that start with a _
@@ -108,18 +129,22 @@ def handle_class(src_path, the_class):
         #   data+= [f";{e[0]}\n"]
         elif inspect.isfunction(e[1]):
             res = handle_function(module_name, e[0], e[1])
+            add_class_member(f"{the_class.__module__}.{the_class.__name__}",
+                             e[0])
             data += [res]
         elif isinstance(e[1], property):
             res = handle_property(module_name, e[0], e[1])
+            add_class_member(f"{the_class.__module__}.{the_class.__name__}",
+                             e[0])
             data += res
         else:
             # res = handle_function(module_name, e[0], e[1])
             # data+= [f";what am I else{e[0]} {e[1]} ?\n"]
             pass
-    
 
-    
-    file_head = get_class_file_head( f"{the_class.__module__}.{the_class.__name__}", module_name, the_class.__module__, the_class.__doc__)
+    file_head = get_class_file_head(
+        f"{the_class.__module__}.{the_class.__name__}", module_name,
+        the_class.__module__, the_class.__doc__)
     mkpath(os.path.join(src_path, the_class.__module__.replace(".", "/")))
     with open(
             os.path.join(src_path, the_class.__module__.replace(".", "/"),
@@ -149,21 +174,23 @@ def handle_module(module_name, src_path, the_module):
             if element[1] in classes_exported:
                 create_reference_class(src_path, module_name, element[1])
             else:
-                create_reference_class(src_path, module_name, element[1])
                 handle_class(src_path, element[1])
+                create_reference_class(src_path, module_name, element[1])
                 classes_exported.add(element[1])
-               
+
         elif inspect.isfunction(element[1]):
             data += handle_function(module_name, element[0], element[1])
     file_head = get_source_file_head(module_name, module_name,
                                      the_module.__doc__)
-    
+
     # mkpath(os.path.join(src_path, ))
-    if len(data) >0:
-      with open(os.path.join(src_path, module_name.replace(".", "/"))+ ".clj", "w") as f:
-          f.writelines(file_head)
-          for line in data:
-              f.writelines(line)
+    if len(data) > 0:
+        with open(
+                os.path.join(src_path, module_name.replace(".", "/")) + ".clj",
+                "w") as f:
+            f.writelines(file_head)
+            for line in data:
+                f.writelines(line)
 
 
 def handle_python_lib(module_name,
@@ -200,7 +227,8 @@ def handle_python_lib(module_name,
     except:
         print(f"failed to create path: {path}")
         exit(-1)
-    project = get_project(f"pycloj/pycloj-{module_name}", f"{version}--AUTO-{VERSION}-SNAPSHOT")
+    project = get_project(f"pycloj/pycloj-{module_name}",
+                          f"{version}--AUTO-{VERSION}-SNAPSHOT")
     # print(project)
     with open(os.path.join(path, "project.clj"), "w") as f:
         f.writelines(project)
@@ -247,7 +275,11 @@ if __name__ == "__main__":
         default='')
 
     args = parser.parse_args()
-    sub_modules = args.sub_modules.split(",")
+    
+    if args.sub_modules:
+      sub_modules = args.sub_modules.split(",")
+    else:
+      sub_modules = []
     handle_python_lib(args.module,
                       is_root=True,
                       path=args.output,

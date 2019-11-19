@@ -9,4 +9,5 @@ from templates.project_clj import project_tpl
 from templates.source_file_head_clj import source_file_head
 from templates.class_file_head_clj import class_file_head
 from templates.reference_element import reference_element_tpl
+from templates.reference_member import reference_member_tpl
 
