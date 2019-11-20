@@ -16,26 +16,6 @@ classes_exported = set()
 classes_members = {}
 
 
-LIBROOT = ""
-
-def get_sub_module_path(fname):
-  global LIBROOT
-  remove_prefix = fname[len(LIBROOT)+1:-3]
-  plist = remove_prefix.split("/")
-  path = "/".join(plist[:-1])
-  file_name = plist[-1]
-  return path, file_name
-
-
-def get_ns_from_path(fname):
-  global LIBROOT
-  path, filename = get_sub_module_path(fname)
-  module_name = LIBROOT.split("/")[-1]
-  path = path.replace("/",".")
-  return f"{module_name}.{path}.{filename}"
-
-
-
 def create_reference_class(src_path, refering_module, the_class):
     path_list = the_class.__module__.split(".")
     class_name = path_list[-1]
@@ -49,7 +29,7 @@ def create_reference_class(src_path, refering_module, the_class):
     members_def = []
     print(classes_members, refering_module, the_class)
     members = classes_members.get(
-        f"{the_class.__module__}.{the_class.__name__}", [])
+        f"{the_class.__module__}.{the_class.__name__}",[])
     for m in members:
         members_def.append(
             get_reference_member(
@@ -60,7 +40,7 @@ def create_reference_class(src_path, refering_module, the_class):
                          f"{class_name}.clj"), "w") as f:
         f.writelines(ref_content)
         for mdef in members_def:
-            f.writelines(mdef)
+          f.writelines(mdef)
 
 
 def get_positional_args(sig):
@@ -83,8 +63,8 @@ def get_keyword_args(sig):
             if p.default != inspect._empty and p.default != None:
                 defaults.append(p.name)
                 defaults.append(str(p.default).lower())
-    #print(params)
-    #print(defaults)
+    print(params)
+    print(defaults)
     return " ".join(params), " ".join(defaults)
 
 
@@ -92,13 +72,13 @@ def handle_function(module_name, fn_name, fn):
     try:
         sig = inspect.signature(fn)
     except Exception as e:
-        #print(e)
+        print(e)
         return ""
     # sig = inspect.signature(fn)
     positional_args = get_positional_args(sig)
     kw_args, defaults = get_keyword_args(sig)
 
-    # #print("kw_args", kw_args)
+    # print("kw_args", kw_args)
     return get_function(module_name,
                         fn_name,
                         positional_args=positional_args,
@@ -114,7 +94,7 @@ def handle_property(module_name, property_name, proprty_el):
 
 
 def add_class_member(class_path, member):
-    #print("in class members", class_path,member)
+    print("in class members", class_path,member)
     cls_members = classes_members.get(class_path)
     if not cls_members:
         classes_members[class_path] = []
@@ -165,37 +145,34 @@ def handle_class(src_path, the_class):
         f"{the_class.__module__}.{the_class.__name__}", module_name,
         the_class.__module__, the_class.__doc__)
     mkpath(os.path.join(src_path, the_class.__module__.replace(".", "/")))
-    #print(data)
+    print(data)
     with open(
             os.path.join(src_path, the_class.__module__.replace(".", "/"),
                          f"{the_class.__name__}.clj"), "w") as f:
         f.writelines(file_head)
         for line in data:
             # try:
-            #print(line, type(line))
+            print(line, type(line))
             f.writelines(line)
             # except:
-            # print("!!!! failed to write", line)
+                # print("!!!! failed to write", line)
 
 
-def handle_module(module_name, src_path, the_module,  depth=0):
+def handle_module(module_name, src_path, the_module):
     data = []
     # print(the_module)
     # exit(0)
-    ignore = [
-            '__builtins__', '__cached__', '__doc__', '__file__', '__loader__',
-            '__name__', '__package__', '__path__', '__spec__', '__version__'
-        ]
+
     for element in inspect.getmembers(the_module):
-        if depth > 1:
-          return
-        print(element[0])
-        if element[0] in ignore:
-            print("ignoring", element[0])
+        if element[0] in [
+                '__builtins__', '__cached__', '__doc__', '__file__',
+                '__loader__', '__name__', '__package__', '__path__',
+                '__spec__', '__version__'
+        ]:
             pass
         elif element[0] == "__doc__":
             data.append(element[1])
-            
+            #elements_exported.add(element)
         elif inspect.isclass(element[1]):
             if element[1] in classes_exported:
                 create_reference_class(src_path, module_name, element[1])
@@ -205,38 +182,18 @@ def handle_module(module_name, src_path, the_module,  depth=0):
                 classes_exported.add(element[1])
 
         elif inspect.isfunction(element[1]):
-            print("function", element[0])
-            data.append(handle_function(module_name, element[0], element[1]))
-        elif inspect.ismodule(element[1]):
-            try:
-              if LIBROOT in element[1].__file__:
-                handle_module(element[0],src_path,element[1],depth+1)
-            except:
-              pass
-        else:
-            print("in else", element[0], type(element[1]))
-    
-    
-
-    try:
-      filepath = the_module.__file__
-    except:
-      return 
-
-    ns = get_ns_from_path(filepath)
-    file_head = get_source_file_head(ns, module_name,
+            data += handle_function(module_name, element[0], element[1])
+    file_head = get_source_file_head(module_name, module_name,
                                      the_module.__doc__)
-    fpath, filename = get_sub_module_path(filepath)
-    path = os.path.join(src_path, fpath )
-    mkpath(path)
-    full_filename = os.path.join(path, f"{filename}.clj")
+
+    # mkpath(os.path.join(src_path, ))
     if len(data) > 0:
-        with open(full_filename,"w") as f:
+        with open(
+                os.path.join(src_path, module_name.replace(".", "/")) + ".clj",
+                "w") as f:
             f.writelines(file_head)
             for line in data:
                 f.writelines(line)
-
-
 
 
 def handle_python_lib(module_name,
@@ -244,12 +201,9 @@ def handle_python_lib(module_name,
                       is_root=False,
                       rename_path=True,
                       sub_modules_list=None):
-    global  LIBROOT
     print(f"importing module {module_name}")
     try:
         the_module = __import__(module_name)
-        LIBROOT = the_module.__path__[0]
-        print("LIBROOT",LIBROOT)
     except ModuleNotFoundError:
         print(
             f"could not import module {module_name}. please verify that the module exist"
@@ -287,12 +241,29 @@ def handle_python_lib(module_name,
     # create test dir
     test_path = os.path.join(path, "test")
     mkpath(test_path)
-    if True:
-        # handle_module(module_name, src_path, the_module)
-        for elm in inspect.getmembers(the_module):
-            if inspect.ismodule(elm[1]) and elm[0] == "datasets":
-                print("found datasets")
-                handle_module(elm[0], src_path + "/" + module_name, elm[1])
+    if not sub_modules_list or len(sub_modules_list) == 0:
+        sub_modules, _ = get_sub_modules_recursive(module_name)
+        #CODE for debugging
+        print(sub_modules)
+        m = "keras.datasets"
+        p = mkpath(os.path.join(src_path, m.replace(".", "/")))
+        
+        mod = __import__(m)
+        globals()[m] = mod
+        print("-------------------------------------------")
+        print(m, src_path, mod)
+        handle_module(m, src_path, mod)
+        exit(0)
+        #END
+    else:
+        print(f"modules = {sub_modules_list}")
+        sub_modules = set(sub_modules_list)
+        # sub_modules.add(module_name)
+    for m in sub_modules:
+        p = mkpath(os.path.join(src_path, m.replace(".", "/")))
+        mod = __import__(m)
+        globals()[m] = mod
+        handle_module(m, src_path, mod)
 
 
 if __name__ == "__main__":
@@ -319,11 +290,11 @@ if __name__ == "__main__":
         default='')
 
     args = parser.parse_args()
-
+    
     if args.sub_modules:
-        sub_modules = args.sub_modules.split(",")
+      sub_modules = args.sub_modules.split(",")
     else:
-        sub_modules = None
+      sub_modules = None
     handle_python_lib(args.module,
                       is_root=True,
                       path=args.output,

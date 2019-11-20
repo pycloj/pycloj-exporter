@@ -29,20 +29,7 @@ def is_importable(mlist):
       print(e)
   return imp_mod
 
-
-
 def get_sub_modules_recursive(module_name,skip_underscore=True, level=4):
-  sub_module_set = set()
-  the_module = __import__(module_name)
-  for importer, modname, ispkg in pkgutil.walk_packages(path=the_module.__path__):
-    if modname[0] == "_" and skip_underscore:
-      pass
-    else:
-      sub_module_set.add(f"{module_name}.{modname}")
-  return sub_module_set, None
-  
-
-def get_sub_modules_recursive_(module_name,skip_underscore=True, level=4):
     sub_modules_0 = set()
     sub_modules_1 = set()
     sub_modules_2 = set()
