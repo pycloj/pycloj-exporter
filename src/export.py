@@ -47,7 +47,7 @@ def create_reference_class(src_path, refering_module, the_class):
         the_class.__name__)
 
     members_def = []
-    print(classes_members, refering_module, the_class)
+    # print(classes_members, refering_module, the_class)
     members = classes_members.get(
         f"{the_class.__module__}.{the_class.__name__}", [])
     for m in members:
@@ -191,7 +191,7 @@ def handle_module(module_name, src_path, the_module,  depth=0, handle_sub_module
           return
         # print(element[0])
         if element[0] in ignore:
-            print("ignoring", element[0])
+            # print("ignoring", element[0])
             pass
         elif element[0] == "__doc__":
             data.append(element[1])
@@ -207,7 +207,7 @@ def handle_module(module_name, src_path, the_module,  depth=0, handle_sub_module
         elif inspect.isfunction(element[1]):
             # print("function", element[0])
             data.append(handle_function(module_name, element[0], element[1]))
-        elif inspect.ismodule(element[1]):
+        elif inspect.ismodule(element[1]) and handle_sub_module:
             try:
               if LIBROOT in element[1].__file__:
                 handle_module(element[0],src_path,element[1],depth+1)
@@ -250,7 +250,7 @@ def handle_python_lib(module_name,
     try:
         the_module = __import__(module_name)
         LIBROOT = the_module.__path__[0]
-        print("LIBROOT",LIBROOT)
+        # print("LIBROOT",LIBROOT)
     except ModuleNotFoundError:
         print(
             f"could not import module {module_name}. please verify that the module exist"
@@ -275,7 +275,7 @@ def handle_python_lib(module_name,
     try:
         mkpath(path)
     except:
-        print(f"failed to create path: {path}")
+        # print(f"failed to create path: {path}")
         exit(-1)
     project = get_project(f"pycloj/pycloj-{module_name}",
                           f"{version}-AUTO-{VERSION}-SNAPSHOT")
@@ -288,12 +288,11 @@ def handle_python_lib(module_name,
     # create test dir
     test_path = os.path.join(path, "test")
     mkpath(test_path)
-    handle_module(module_name, src_path, the_module)
-    # for elm in inspect.getmembers(the_module):
-    #     # if inspect.ismodule(elm[1]) and elm[0] == "datasets":
-    #     if inspect.ismodule(elm[1]):
-    #         print("found datasets")
-    #         handle_module(elm[0], src_path + "/" + module_name, elm[1])
+    handle_module(module_name, src_path, the_module, handle_sub_module=False)
+    for elm in inspect.getmembers(the_module):
+        # if inspect.ismodule(elm[1]) and elm[0] == "datasets":
+        if inspect.ismodule(elm[1]):
+            handle_module(elm[0], src_path + "/" + module_name, elm[1])
 
 
 if __name__ == "__main__":
