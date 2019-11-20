@@ -32,7 +32,7 @@ def get_project(project, version):
 
 def get_source_file_head(namespace, module_name, docstring):
     return source_file_head.substitute({
-        "namespace": namespace,
+        "namespace": py2clojure_function_name(namespace),
         "module_name": module_name,
         "docstring": protect_docstring(docstring)
     })
@@ -40,7 +40,7 @@ def get_source_file_head(namespace, module_name, docstring):
 
 def get_class_file_head(namespace, module_name, full_import_path, docstring):
     return class_file_head.substitute({
-        "namespace": namespace,
+        "namespace": py2clojure_function_name(namespace),
         "module_name": module_name,
         "docstring": protect_docstring(docstring),
         "full_import_path": full_import_path

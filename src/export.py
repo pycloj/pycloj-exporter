@@ -43,6 +43,7 @@ def get_ns_from_path(fname):
 
 
 def create_reference_class(src_path, refering_module, the_class):
+    print("create_reference_class", refering_module,the_class )
     path_list = the_class.__module__.split(".")
     class_name = path_list[-1]
     module_name = ".".join(path_list[:-1])
@@ -63,7 +64,7 @@ def create_reference_class(src_path, refering_module, the_class):
 
     with open(
             os.path.join(src_path, refering_module.replace(".", "/"),
-                         f"{class_name}.clj"), "w") as f:
+                         f"{the_class.__name__}.clj"), "w") as f:
         f.writelines(ref_content)
         for mdef in members_def:
             f.writelines(mdef)
@@ -335,6 +336,7 @@ def handle_python_lib(module_name,
     test_path = os.path.join(path, "test")
     mkpath(test_path)
     handle_base_module(module_name, src_path, the_module)
+    #debug
     for elm in inspect.getmembers(the_module):
         # if inspect.ismodule(elm[1]) and elm[0] == "datasets":
         if inspect.ismodule(elm[1])  :
