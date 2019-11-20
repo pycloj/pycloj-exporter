@@ -129,7 +129,7 @@ def handle_class(src_path, the_class):
         '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__',
         '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__',
         '__reduce_ex__', '__repr__', '__setattr__', '__setstate__',
-        '__sizeof__', '__str__', '__subclasshook__', '__weakref__'
+        '__sizeof__', '__str__', '__subclasshook__', '__weakref__',"builtins"
     ]
 
     elements = inspect.getmembers(the_class)
@@ -178,18 +178,18 @@ def handle_class(src_path, the_class):
             # print("!!!! failed to write", line)
 
 
-def handle_module(module_name, src_path, the_module,  depth=0):
+def handle_module(module_name, src_path, the_module,  depth=0, handle_sub_module=True):
     data = []
     # print(the_module)
     # exit(0)
     ignore = [
             '__builtins__', '__cached__', '__doc__', '__file__', '__loader__',
-            '__name__', '__package__', '__path__', '__spec__', '__version__'
+            '__name__', '__package__', '__path__', '__spec__', '__version__',"builtins"
         ]
     for element in inspect.getmembers(the_module):
         if depth > 1:
           return
-        print(element[0])
+        # print(element[0])
         if element[0] in ignore:
             print("ignoring", element[0])
             pass
@@ -205,7 +205,7 @@ def handle_module(module_name, src_path, the_module,  depth=0):
                 classes_exported.add(element[1])
 
         elif inspect.isfunction(element[1]):
-            print("function", element[0])
+            # print("function", element[0])
             data.append(handle_function(module_name, element[0], element[1]))
         elif inspect.ismodule(element[1]):
             try:
@@ -214,7 +214,8 @@ def handle_module(module_name, src_path, the_module,  depth=0):
             except:
               pass
         else:
-            print("in else", element[0], type(element[1]))
+            # print("in else", element[0], type(element[1]))
+            pass
     
     
 
@@ -287,12 +288,12 @@ def handle_python_lib(module_name,
     # create test dir
     test_path = os.path.join(path, "test")
     mkpath(test_path)
-    if True:
-        # handle_module(module_name, src_path, the_module)
-        for elm in inspect.getmembers(the_module):
-            if inspect.ismodule(elm[1]) and elm[0] == "datasets":
-                print("found datasets")
-                handle_module(elm[0], src_path + "/" + module_name, elm[1])
+    handle_module(module_name, src_path, the_module)
+    # for elm in inspect.getmembers(the_module):
+    #     # if inspect.ismodule(elm[1]) and elm[0] == "datasets":
+    #     if inspect.ismodule(elm[1]):
+    #         print("found datasets")
+    #         handle_module(elm[0], src_path + "/" + module_name, elm[1])
 
 
 if __name__ == "__main__":
