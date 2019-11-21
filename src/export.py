@@ -108,6 +108,8 @@ def get_keyword_args(sig):
 
 
 def handle_function(module_name, fn_name, fn):
+    if fn_name[0] == "_":
+        return ""
     try:
         sig = inspect.signature(fn)
     except Exception as e:
@@ -215,7 +217,8 @@ def handle_module(module_name, src_path, the_module,  depth=0, handle_sub_module
             pass
         elif element[0] == "__doc__":
             data.append(element[1])
-            
+        elif element[0][0] == "_":
+            pass    
         elif inspect.isclass(element[1]):
             if element[1] in classes_exported:
                 create_reference_class(src_path, module_name, element[1])
