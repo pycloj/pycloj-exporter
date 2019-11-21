@@ -15,38 +15,56 @@ from version import VERSION
 classes_exported = set()
 classes_members = {}
 
-
 LIBROOT = ""
 MODULE_NAME = ""
 
-def get_sub_module_path(fname):
-  global LIBROOT, MODULE_NAME
-  remove_prefix = fname[len(LIBROOT)+1:-3]
-  plist = remove_prefix.split("/")
-  path = "/".join(plist[:-1])
-  file_name = plist[-1]
-  if file_name == "__init__":
+
+def is_my_sub_module(m, sub):
+
     try:
-      file_name = plist[-2]
+        print("is sub module", m.__file__, sub.__file__)
+        base_path = m.__file__
+        sub_path = sub.__file__
     except:
-      file_name = MODULE_NAME
-  return path, file_name
+        return False
+    if LIBROOT not in sub_path:
+        return False
+    base_path_list = base_path.split("/")
+    if base_path_list[-1] == "__init__.py":
+        base_path = "/".join(base_path_list[:-1])
+    if base_path in sub_path:
+        return True
+    else:
+        return False
+
+
+def get_sub_module_path(fname):
+    global LIBROOT, MODULE_NAME
+    remove_prefix = fname[len(LIBROOT) + 1:-3]
+    plist = remove_prefix.split("/")
+    path = "/".join(plist[:-1])
+    file_name = plist[-1]
+    if file_name == "__init__":
+        try:
+            file_name = plist[-2]
+        except:
+            file_name = MODULE_NAME
+    return path, file_name
 
 
 def get_ns_from_path(fname):
-  global LIBROOT, MODULE_NAME
-  path, filename = get_sub_module_path(fname)
-  module_name = LIBROOT.split("/")[-1]
-  path = path.replace("/",".")
-  if not path:
-    return ".".join([MODULE_NAME,filename])
-  return ".".join([MODULE_NAME,path,filename])
-  # return f"{module_name}.{path}.{filename}"
-
+    global LIBROOT, MODULE_NAME
+    path, filename = get_sub_module_path(fname)
+    module_name = LIBROOT.split("/")[-1]
+    path = path.replace("/", ".")
+    if not path:
+        return ".".join([MODULE_NAME, filename])
+    return ".".join([MODULE_NAME, path, filename])
+    # return f"{module_name}.{path}.{filename}"
 
 
 def create_reference_class(src_path, refering_module, the_class):
-    print("create_reference_class", refering_module,the_class )
+    print("create_reference_class", refering_module, the_class)
     path_list = the_class.__module__.split(".")
     class_name = path_list[-1]
     module_name = ".".join(path_list[:-1])
@@ -80,17 +98,16 @@ def get_positional_args(sig):
             params.append(param.name)
     return " ".join(params)
 
+
 def get_default_arg_value(default_val):
-  if type(default_val) == str:
-    return f'\"{default_val}\"'
-  elif type(default_val) == bool:
-    return str(default_val).lower()
-  elif type(default_val) == list:
-    return str(default_val)
-  else:
-    return str(default_val)
-
-
+    if type(default_val) == str:
+        return f'\"{default_val}\"'
+    elif type(default_val) == bool:
+        return str(default_val).lower()
+    elif type(default_val) == list:
+        return str(default_val)
+    else:
+        return str(default_val)
 
 
 def get_keyword_args(sig):
@@ -153,7 +170,7 @@ def handle_class(src_path, the_class):
         '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__',
         '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__',
         '__reduce_ex__', '__repr__', '__setattr__', '__setstate__',
-        '__sizeof__', '__str__', '__subclasshook__', '__weakref__',"builtins"
+        '__sizeof__', '__str__', '__subclasshook__', '__weakref__', "builtins"
     ]
 
     elements = inspect.getmembers(the_class)
@@ -202,16 +219,20 @@ def handle_class(src_path, the_class):
             # print("!!!! failed to write", line)
 
 
-def handle_module(module_name, src_path, the_module,  depth=0, handle_sub_module=True):
-    if depth > 1:
+def handle_module(module_name,
+                  src_path,
+                  the_module,
+                  depth=0):
+    if depth > 3:
         return
     data = []
     # print(the_module)
     # exit(0)
     ignore = [
-            '__builtins__', '__cached__', '__doc__', '__file__', '__loader__',
-            '__name__', '__package__', '__path__', '__spec__', '__version__',"builtins"
-        ]
+        '__builtins__', '__cached__', '__doc__', '__file__', '__loader__',
+        '__name__', '__package__', '__path__', '__spec__', '__version__',
+        "builtins"
+    ]
     for element in inspect.getmembers(the_module):
 
         # print(element[0])
@@ -221,7 +242,7 @@ def handle_module(module_name, src_path, the_module,  depth=0, handle_sub_module
         elif element[0] == "__doc__":
             data.append(element[1])
         elif element[0][0] == "_":
-            pass    
+            pass
         elif inspect.isclass(element[1]):
             if element[1] in classes_exported:
                 create_reference_class(src_path, module_name, element[1])
@@ -233,32 +254,29 @@ def handle_module(module_name, src_path, the_module,  depth=0, handle_sub_module
         elif inspect.isfunction(element[1]):
             # print("function", element[0])
             data.append(handle_function(module_name, element[0], element[1]))
-        elif inspect.ismodule(element[1]) and handle_sub_module:
-            try:
-              if LIBROOT in element[1].__file__:
-                handle_module(element[0],src_path,element[1],depth+1)
-            except:
-              pass
+        elif inspect.ismodule(element[1]):
+            if is_my_sub_module(the_module, element[1]):
+                handle_module(element[0],
+                                  src_path,
+                                  element[1],
+                                  depth + 1)
         else:
             # print("in else", element[0], type(element[1]))
             pass
-    
-    
 
     try:
-      filepath = the_module.__file__
+        filepath = the_module.__file__
     except:
-      return 
+        return
 
     ns = get_ns_from_path(filepath)
-    file_head = get_source_file_head(ns, module_name,
-                                     the_module.__doc__)
+    file_head = get_source_file_head(ns, module_name, the_module.__doc__)
     fpath, filename = get_sub_module_path(filepath)
-    path = os.path.join(src_path, fpath )
+    path = os.path.join(src_path, fpath)
     mkpath(path)
     full_filename = os.path.join(path, f"{filename}.clj")
     if len(data) > 0:
-        with open(full_filename,"w") as f:
+        with open(full_filename, "w") as f:
             f.writelines(file_head)
             for line in data:
                 f.writelines(line)
@@ -267,9 +285,10 @@ def handle_module(module_name, src_path, the_module,  depth=0, handle_sub_module
 def handle_base_module(module_name, src_path, the_module):
     data = []
     ignore = [
-            '__builtins__', '__cached__', '__doc__', '__file__', '__loader__',
-            '__name__', '__package__', '__path__', '__spec__', '__version__',"builtins"
-        ]
+        '__builtins__', '__cached__', '__doc__', '__file__', '__loader__',
+        '__name__', '__package__', '__path__', '__spec__', '__version__',
+        "builtins"
+    ]
     for element in inspect.getmembers(the_module):
         if element[0] in ignore:
             pass
@@ -286,22 +305,15 @@ def handle_base_module(module_name, src_path, the_module):
         elif inspect.isfunction(element[1]):
             # print("function", element[0])
             data.append(handle_function(module_name, element[0], element[1]))
-    
-    
 
-
-
-    
     full_filename = os.path.join(src_path, f"{module_name}.clj")
     file_head = get_source_file_head(module_name, module_name,
                                      the_module.__doc__)
 
-    with open(full_filename,"w") as f:
+    with open(full_filename, "w") as f:
         f.writelines(file_head)
         for line in data:
             f.writelines(line)
-
-
 
 
 def handle_python_lib(module_name,
@@ -309,7 +321,7 @@ def handle_python_lib(module_name,
                       is_root=False,
                       rename_path=True,
                       sub_modules_list=[]):
-    global  LIBROOT, MODULE_NAME
+    global LIBROOT, MODULE_NAME
     MODULE_NAME = module_name
     print(f"importing module {module_name}")
     try:
@@ -353,16 +365,22 @@ def handle_python_lib(module_name,
     # create test dir
     test_path = os.path.join(path, "test")
     mkpath(test_path)
-    handle_base_module(module_name, src_path, the_module)
+    handle_module(module_name, src_path, the_module)
     #debug
+    return
     for elm in inspect.getmembers(the_module):
         # if inspect.ismodule(elm[1]) and elm[0] == "datasets":
-        if inspect.ismodule(elm[1])  :
-            if len(sub_modules_list)==0:
-                handle_module(elm[0], src_path + "/" + module_name, elm[1])
-            elif elm[0] in  sub_modules_list:
-                handle_module(elm[0], src_path + "/" + module_name, elm[1])
-
+        if inspect.ismodule(elm[1]):
+            if len(sub_modules_list) == 0:
+                handle_module(elm[0],
+                              src_path + "/" + module_name,
+                              elm[1],
+                              base_module=the_module)
+            elif elm[0] in sub_modules_list:
+                handle_module(elm[0],
+                              src_path + "/" + module_name,
+                              elm[1],
+                              base_module=the_module)
 
 
 if __name__ == "__main__":
