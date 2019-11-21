@@ -32,9 +32,12 @@ def get_project(project, version):
 
 def get_source_file_head(namespace, module_name, docstring):
     return source_file_head.substitute({
-        "namespace": py2clojure_function_name(namespace),
+        "namespace":namespace,
         "module_name": module_name,
-        "docstring": protect_docstring(docstring)
+        "clj_module_name": py2clojure_function_name(module_name),
+        "docstring": protect_docstring(docstring),
+        "clj_namespace": py2clojure_function_name(namespace)
+
     })
 
 
@@ -42,6 +45,7 @@ def get_class_file_head(namespace, module_name, full_import_path, docstring):
     return class_file_head.substitute({
         "namespace": py2clojure_function_name(namespace),
         "module_name": module_name,
+        "clj_module_name": py2clojure_function_name(module_name),
         "docstring": protect_docstring(docstring),
         "full_import_path": full_import_path
     })
@@ -55,6 +59,7 @@ def get_property(module_name, property_name, docstring=""):
         property_name,
         "module_name":
         module_name,
+        "clj_module_name": py2clojure_function_name(module_name),
         "clj_property_name":
         py2clojure_function_name(property_name)
     })
@@ -82,6 +87,7 @@ def get_function(module_name,
             function_name,
             "clj_function_name":
             py2clojure_function_name(function_name),
+        "clj_module_name": py2clojure_function_name(module_name),
             "module_name":
             module_name,
             "positional_args":
@@ -95,6 +101,7 @@ def get_function(module_name,
         })
     elif positional_args and kw_args:
         return method_positional_kw.substitute({
+        "clj_module_name": py2clojure_function_name(module_name),
             "module_name":
             module_name,
             "function_name":
@@ -112,6 +119,7 @@ def get_function(module_name,
         })
     elif defaults and kw_args:
         return method_kw_defaults.substitute({
+        "clj_module_name": py2clojure_function_name(module_name),
             "module_name":
             module_name,
             "function_name":
@@ -131,6 +139,7 @@ def get_function(module_name,
         })
     elif kw_args:
         return method_kw.substitute({
+        "clj_module_name": py2clojure_function_name(module_name),
             "module_name":
             module_name,
             "function_name":
@@ -146,6 +155,7 @@ def get_function(module_name,
         })
     elif positional_args:
         return method_positional.substitute({
+        "clj_module_name": py2clojure_function_name(module_name),
             "module_name":
             module_name,
             "function_name":
@@ -161,6 +171,7 @@ def get_function(module_name,
         })
     else:
         return method_positional.substitute({
+        "clj_module_name": py2clojure_function_name(module_name),
             "module_name":
             module_name,
             "function_name":

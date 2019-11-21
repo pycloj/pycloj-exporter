@@ -77,6 +77,18 @@ def get_positional_args(sig):
             params.append(param.name)
     return " ".join(params)
 
+def get_default_arg_value(default_val):
+  if type(default_val) == str:
+    return f'\"{default_val}\"'
+  elif type(default_val) == bool:
+    return str(default_val).lower()
+  elif type(default_val) == list:
+    return str(default_val)
+  else:
+    return str(default_val)
+
+
+
 
 def get_keyword_args(sig):
     params = []
@@ -89,9 +101,9 @@ def get_keyword_args(sig):
             params.append(p.name)
             if p.default != inspect._empty and p.default != None:
                 defaults.append(p.name)
-                defaults.append(str(p.default).lower())
+                defaults.append(get_default_arg_value(p.default))
     #print(params)
-    #print(defaults)
+    print(defaults)
     return " ".join(params), " ".join(defaults)
 
 

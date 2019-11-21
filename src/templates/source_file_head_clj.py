@@ -1,6 +1,6 @@
 from string import Template
 source_file_head = Template('''
-(ns $namespace
+(ns $clj_namespace
   "$docstring"
   (:require [libpython-clj.python
              :refer [import-module
@@ -17,5 +17,5 @@ source_file_head = Template('''
             [clojure.pprint :as pp]))
 
 (py/initialize!)
-(defonce $module_name (import-module "$namespace"))
+(defonce $clj_module_name (import-module "$namespace"))
 ''')
