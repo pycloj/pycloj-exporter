@@ -38,7 +38,10 @@ def get_ns_from_path(fname):
   path, filename = get_sub_module_path(fname)
   module_name = LIBROOT.split("/")[-1]
   path = path.replace("/",".")
-  return f"{module_name}.{path}.{filename}"
+  if not path:
+    return ".".join([MODULE_NAME,filename])
+  return ".".join([MODULE_NAME,path,filename])
+  # return f"{module_name}.{path}.{filename}"
 
 
 
@@ -103,7 +106,7 @@ def get_keyword_args(sig):
                 defaults.append(p.name)
                 defaults.append(get_default_arg_value(p.default))
     #print(params)
-    print(defaults)
+    # print(defaults)
     return " ".join(params), " ".join(defaults)
 
 
