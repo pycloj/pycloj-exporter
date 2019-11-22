@@ -49,6 +49,7 @@ def handle_package(module_name):
 
     src_path = make_src_path("../../output", module_name,
                              the_module.__version__)
+    handle_module(src_path, "", module_name, the_module)
     handle_sub_module(src_path, the_module, base_name=module_name)
 
 

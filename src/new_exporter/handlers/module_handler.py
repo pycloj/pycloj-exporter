@@ -25,8 +25,8 @@ def handle_module(src_path, module_path, module_name, the_module):
             continue
         elif element[0][0] == "_":
             continue
-        elif inspect.isclass(element[1]):
-            handle_class(src_path, element[0], element[1], module_path)
+        # elif inspect.isclass(element[1]):
+        #     handle_class(src_path, element[0], element[1], module_path)
         elif inspect.isfunction(element[1]):
             data.append(handle_function(module_name, element[0], element[1]))
 
