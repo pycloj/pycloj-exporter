@@ -1,5 +1,6 @@
 import inspect
-from handlers.func_handler import handle_function
+import os
+from handlers.function_handler import handle_function
 from template import get_class_file_head, get_property
 from distutils.dir_util import mkpath
 
@@ -21,26 +22,25 @@ def handle_class(src_path, class_name, the_class, base_path):
         '__sizeof__', '__str__', '__subclasshook__', '__weakref__', "builtins"
     ]
     elements = inspect.getmembers(the_class)
-    data.append(handle_function(module_name, the_class.__name__, the_class))
+    module_name = ".".join([src_path, class_name])
+    data.append(handle_function(module_name, class_name, the_class))
     for e in elements:
         if e[0][0] == "_":
             continue
         if e[0] in ignore:
-          continue
+            continue
         elif inspect.isfunction(e[1]):
             res = handle_function(module_name, e[0], e[1])
             data.append(res)
         elif isinstance(e[1], property):
             res = handle_property(module_name, e[0], e[1])
             data.append(res)
-    file_head = get_class_file_head(
-        f"{the_class.__module__}.{the_class.__name__}", module_name,
-        the_class.__module__, the_class.__doc__)
-    
-    mkpath(os.path.join(base_path.replace(".","/", the_class.__name__)))
-    with open(
-            os.path.join(src_path, the_class.__module__.replace(".", "/"),
-                         f"{the_class.__name__}.clj"), "w") as f:
+    file_head = get_class_file_head(f"{base_path}.{class_name}", base_path,
+                                    base_path, the_class.__doc__)
+
+    mkpath(os.path.join(src_path, base_path.replace(".", "/"), class_name))
+    with open(os.path.join(src_path, base_path.replace(".", "/"),
+                         f"{class_name}.clj"), "w") as f:
         f.writelines(file_head)
         for line in data:
             f.writelines(line)

@@ -2,7 +2,7 @@ import inspect
 import os
 
 from distutils.dir_util import mkpath
-from handlers.func_handler import handle_function
+from handlers.function_handler import handle_function
 from handlers.class_handler import handle_class
 from template import get_source_file_head
 from writer import save_file
@@ -26,7 +26,7 @@ def handle_module(src_path, module_path, module_name, the_module):
         elif element[0][0] == "_":
             continue
         elif inspect.isclass(element[1]):
-            handle_class(src_path, module_name, element[1])
+            handle_class(src_path, element[0], element[1], module_path)
         elif inspect.isfunction(element[1]):
             data.append(handle_function(module_name, element[0], element[1]))
 
