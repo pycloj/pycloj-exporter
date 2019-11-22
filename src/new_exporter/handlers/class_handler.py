@@ -11,7 +11,7 @@ def handle_property(module_name, property_name, proprty_el):
                         docstring=proprty_el.__doc__)
 
 
-def handle_class(src_path, class_name, the_class, base_path):
+def handle_class(src_path, class_name, the_class, base_path, module_name):
     data = []
     ignore = [
         '__call__', '__class__', '__delattr__', '__dict__', '__dir__',
@@ -22,7 +22,10 @@ def handle_class(src_path, class_name, the_class, base_path):
         '__sizeof__', '__str__', '__subclasshook__', '__weakref__', "builtins"
     ]
     elements = inspect.getmembers(the_class)
-    module_name = ".".join([src_path, class_name])
+    if not base_path:
+        full_module_name = ".".join([module_name, class_name])
+    else:
+        full_module_name = ".".join([base_path, module_name, class_name])
     data.append(handle_function(module_name, class_name, the_class))
     for e in elements:
         if e[0][0] == "_":
@@ -35,10 +38,12 @@ def handle_class(src_path, class_name, the_class, base_path):
         elif isinstance(e[1], property):
             res = handle_property(module_name, e[0], e[1])
             data.append(res)
-    file_head = get_class_file_head(f"{base_path}.{class_name}", base_path,
-                                    base_path, the_class.__doc__)
+    print(f"{base_path}.{class_name}", base_path,
+                                    base_path)
+    file_head = get_class_file_head(full_module_name, class_name,
+                                   full_module_name, the_class.__doc__)
 
-    mkpath(os.path.join(src_path, base_path.replace(".", "/"), class_name))
+    mkpath(os.path.join(src_path, base_path.replace(".", "/")))
     with open(os.path.join(src_path, base_path.replace(".", "/"),
                          f"{class_name}.clj"), "w") as f:
         f.writelines(file_head)
