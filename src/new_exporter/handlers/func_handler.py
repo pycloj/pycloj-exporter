@@ -1,5 +1,5 @@
 import inspect
-from templates import get_function
+from template import get_function
 
 def get_positional_args(sig):
     params = []
@@ -36,6 +36,11 @@ def get_keyword_args(sig):
     # print(defaults)
     return " ".join(params), " ".join(defaults)
 
+
+def should_skip_function(func_name, base_module, func):
+  if func_name[0] == "_":
+    return True
+  return False
 
 def handle_function(module_name, fn_name, fn):
     if fn_name[0] == "_":

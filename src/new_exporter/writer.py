@@ -5,7 +5,8 @@ from version import VERSION
 def save_file(src_path, path, filename, data):
   mkpath(os.path.join(src_path,path))
   with open(os.path.join(src_path, path, filename), "w") as f:
-    f.write(data) 
+    for l in data:
+      f.writelines(l)
 
 def make_src_path(base_path, module_name, version):
   path = os.path.join(base_path, module_name,
