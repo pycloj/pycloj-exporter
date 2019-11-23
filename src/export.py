@@ -66,7 +66,7 @@ def create_project_file(lib_version, module_name, path):
     global VERSION
     project = get_project(f"pycloj/pycloj-{module_name}",
                           f"{lib_version}-AUTO-{VERSION}-SNAPSHOT")
-    # print(project)
+    print(os.path.join(path, "project.clj"))
     with open(os.path.join(path, "project.clj"), "w") as f:
         f.writelines(project)
 
@@ -75,7 +75,6 @@ def handle_package(module_name,
                    path="",
                    only_sub_modules=[],
                    ignore_sub_modules=[]):
-    print(module_name)
     try:
         the_module = __import__(module_name)
     except ModuleNotFoundError:
@@ -88,7 +87,8 @@ def handle_package(module_name,
     the_module = __import__(module_name)
     globals()[module_name] = the_module
 
-    project_path, src_path = make_src_path("../output", module_name, the_module.__version__)
+    project_path, src_path = make_src_path(path, module_name, the_module.__version__)
+    print (project_path, src_path)
     create_project_file(the_module.__version__, module_name, project_path)
     handle_module(src_path, "", module_name, the_module)
     handle_sub_module(src_path,
