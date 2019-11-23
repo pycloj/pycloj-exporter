@@ -18,6 +18,6 @@ def make_src_path(base_path, module_name, version):
             break
         except:
             pass
-  mkpath(path)
+  project_path = mkpath(path)[0]
   src_path = mkpath(os.path.join(path,"src"))[0]
-  return src_path
+  return project_path, src_path

@@ -1,5 +1,6 @@
 from string import Template
-class_file_head = Template('''(ns $namespace
+class_file_head = Template('''
+(ns $namespace
   "$docstring"
   (:require [libpython-clj.python
              :refer [import-module

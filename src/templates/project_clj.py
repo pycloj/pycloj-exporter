@@ -1,7 +1,6 @@
 from string import Template
 
-project_tpl = Template('''
-(defproject $project "$version"
+project_tpl = Template('''(defproject $project "$version"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"

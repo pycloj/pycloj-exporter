@@ -26,13 +26,14 @@ def handle_module(src_path, module_path, module_name, the_module):
         elif element[0][0] == "_":
             continue
         elif inspect.isclass(element[1]):
-            handle_class(src_path, element[0], element[1], module_path, module_name)
+            handle_class(src_path, element[0], element[1], module_path, module_name, the_module)
         elif inspect.isfunction(element[1]):
             data.append(handle_function(module_name, element[0], element[1]))
 
     if len(data) == 0:
       return 
-    ns = ".".join([module_path ,module_name])
+    # ns = ".".join([module_path ,module_name])
+    ns = the_module.__name__
     file_head = get_source_file_head(ns, module_name, the_module.__doc__)
     path = os.path.join(src_path, module_path.replace(".","/"))
     mkpath(path)

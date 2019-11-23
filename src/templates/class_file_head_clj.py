@@ -1,6 +1,5 @@
 from string import Template
-class_file_head = Template('''
-(ns $namespace
+class_file_head = Template('''(ns $module_name_clj.$class_name_clj
   "$docstring"
   (:require [libpython-clj.python
              :refer [import-module
@@ -8,14 +7,8 @@ class_file_head = Template('''
                      get-attr
                      python-type
                      call-attr
-                     call-attr-kw
-                     att-type-map
-                     ->py-dict
-                     ->py-list
-                     ]
-             :as py]
-            [clojure.pprint :as pp]))
+                     call-attr-kw]:as py]))
 
 (py/initialize!)
-(defonce $module_name (import-module "$full_import_path"))
+(defonce $last_module_part_clj (import-module "$module_name"))
 ''')

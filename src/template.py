@@ -41,13 +41,15 @@ def get_source_file_head(namespace, module_name, docstring):
     })
 
 
-def get_class_file_head(namespace, module_name, full_import_path, docstring):
+def get_class_file_head(module_name,class_name, last_module_part, docstring):
     return class_file_head.substitute({
-        "namespace": py2clojure_function_name(namespace),
         "module_name": module_name,
-        "clj_module_name": py2clojure_function_name(module_name),
+        "module_name_clj": py2clojure_function_name(module_name),
+        "class_name": class_name,
+        "class_name_clj": py2clojure_function_name(class_name),
+        "last_module_part": last_module_part,
+        "last_module_part_clj": py2clojure_function_name(last_module_part),
         "docstring": protect_docstring(docstring),
-        "full_import_path": full_import_path
     })
 
 
@@ -192,25 +194,3 @@ def get_reference_member(member_name,full_class_path):
         "full_class_path": full_class_path
     })
 
-
-
-
-# if __name__ == "__main__":
-#     print(get_source_file_head("keras", "keras"))
-#     print(get_function("keras", "input", positional_args="a b c"))
-#     print(
-#         get_function("keras",
-#                      "input",
-#                      positional_args="a b c",
-#                      kw_args="d e f"))
-#     print(
-#         get_function("keras",
-#                      "input",
-#                      positional_args="a b c",
-#                      kw_args="d e f",
-#                      defaults="e 1 f 2"))
-#     print(
-#         get_function("keras",
-#                      "input",
-#                      positional_args="a b c",
-#                      docstring="some docstring"))
