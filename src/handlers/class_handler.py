@@ -37,7 +37,7 @@ def handle_class(src_path, class_name, the_class, base_path, module_name,
         if e[0] in ignore:
             continue
         elif inspect.isfunction(e[1]):
-            res = handle_function(module_name, e[0], e[1])
+            res = handle_function(module_name, e[0], e[1],class_member=True)
             data.append(res)
         elif isinstance(e[1], property):
             res = handle_property(module_name, e[0], e[1])

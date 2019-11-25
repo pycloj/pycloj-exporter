@@ -42,7 +42,7 @@ def should_skip_function(func_name, base_module, func):
     return True
   return False
 
-def handle_function(module_name, fn_name, fn):
+def handle_function(module_name, fn_name, fn,class_member=False):
     if fn_name[0] == "_":
         return ""
     try:
@@ -60,4 +60,4 @@ def handle_function(module_name, fn_name, fn):
                         positional_args=positional_args,
                         kw_args=kw_args,
                         defaults=defaults,
-                        docstring=fn.__doc__)
+                        docstring=fn.__doc__, class_member=class_member)

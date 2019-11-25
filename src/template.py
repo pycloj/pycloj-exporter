@@ -75,12 +75,20 @@ def get_reference_element(refering_module, full_class_path, class_name):
     })
 
 
+
+
 def get_function(module_name,
                  function_name,
                  positional_args="",
                  kw_args="",
                  defaults="",
-                 docstring=""):
+                 docstring="", 
+                class_member=False):
+    if class_member:
+      clj_module_name = "self"
+    else:
+      clj_module_name = py2clojure_function_name(module_name)
+
     if positional_args and kw_args and defaults:
         return method_positional_kw_defaults.substitute({
             "docstring":
@@ -89,7 +97,7 @@ def get_function(module_name,
             function_name,
             "clj_function_name":
             py2clojure_function_name(function_name),
-        "clj_module_name": py2clojure_function_name(module_name),
+        "clj_module_name": clj_module_name,
             "module_name":
             module_name,
             "positional_args":
@@ -103,7 +111,7 @@ def get_function(module_name,
         })
     elif positional_args and kw_args:
         return method_positional_kw.substitute({
-        "clj_module_name": py2clojure_function_name(module_name),
+        "clj_module_name": clj_module_name,
             "module_name":
             module_name,
             "function_name":
@@ -121,7 +129,7 @@ def get_function(module_name,
         })
     elif defaults and kw_args:
         return method_kw_defaults.substitute({
-        "clj_module_name": py2clojure_function_name(module_name),
+        "clj_module_name": clj_module_name,
             "module_name":
             module_name,
             "function_name":
@@ -141,7 +149,7 @@ def get_function(module_name,
         })
     elif kw_args:
         return method_kw.substitute({
-        "clj_module_name": py2clojure_function_name(module_name),
+        "clj_module_name": clj_module_name,
             "module_name":
             module_name,
             "function_name":
@@ -157,7 +165,7 @@ def get_function(module_name,
         })
     elif positional_args:
         return method_positional.substitute({
-        "clj_module_name": py2clojure_function_name(module_name),
+        "clj_module_name": clj_module_name,
             "module_name":
             module_name,
             "function_name":
@@ -173,7 +181,7 @@ def get_function(module_name,
         })
     else:
         return method_positional.substitute({
-        "clj_module_name": py2clojure_function_name(module_name),
+        "clj_module_name": clj_module_name,
             "module_name":
             module_name,
             "function_name":
@@ -193,4 +201,6 @@ def get_reference_member(member_name,full_class_path):
         "member_name": py2clojure_function_name(member_name),
         "full_class_path": full_class_path
     })
+
+
 
