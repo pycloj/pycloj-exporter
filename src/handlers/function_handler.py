@@ -2,19 +2,6 @@ import inspect
 from template import get_function, get_function_new
 
 
-def get_positional_args(sig):
-    params = []
-    for param in sig.parameters.values():
-        if param.name == "self":
-            continue
-        elif param.kind in [
-                inspect.Parameter.POSITIONAL_ONLY,
-                inspect.Parameter.POSITIONAL_OR_KEYWORD
-        ]:
-            params.append(param.name)
-    return " ".join(params)
-
-
 def get_default_arg_value(default_val):
     if type(default_val) == str:
         return f'\"{default_val}\"'
@@ -25,19 +12,6 @@ def get_default_arg_value(default_val):
     else:
         return str(default_val)
 
-
-def get_keyword_args(sig):
-    kw = []
-    defaults = []
-    positional  = []
-    for p in sig.parameters.values():
-        if p.kind in [
-                inspect.Parameter.KEYWORD_ONLY
-        ] and p.name != "self":
-            if p.default != inspect._empty and p.default != None:
-                defaults.append(p.name)
-                defaults.append(get_default_arg_value(p.default))
-    return  " ".join(defaults), " ".join(positional), " ".join(kw)
 
 def get_args(sig):
     kw = []
@@ -76,9 +50,6 @@ def handle_function(module_name, fn_name, fn, class_member=False,constractor=Fal
     except Exception as e:
         #print(e)
         return ""
-    # sig = inspect.signature(fn)
-    # positional_args = get_positional_args(sig)
-    # kw_args, defaults = get_keyword_args(sig)
     positional_args, kw_args, defaults = get_args(sig)
     # #print("kw_args", kw_args)
     return get_function_new(module_name,
