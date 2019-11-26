@@ -131,7 +131,7 @@ def get_function_new(module_name,
         tpl = method_kw_defaults
     elif kw_args:
         print("selected method_positional")
-        tpl = kw_args
+        tpl = method_kw
     elif positional_args:
         print("selected method_positional")
         tpl = method_positional
@@ -148,6 +148,7 @@ def get_function_new(module_name,
     #                  defaults,
     #                  docstring,
     #                  class_member) 
+
     return tpl.substitute(params)
 
 

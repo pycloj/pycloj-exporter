@@ -33,7 +33,7 @@ method_kw_defaults = Template('''
 method_positional_kw = Template('''(defn $clj_function_name 
   "$docstring"
   [$positional_args  & {:keys [$kw_args]} ]
-    (py/call-attr-kw $clj_module_name "$function_name" [$positional_args] {$kw_args_call_format}))
+    (py/call-attr-kw $clj_module_name "$function_name" [$positional_args_call_format] {$kw_args_call_format}))
 ''')
 
 method_all_tpl = Template('''
@@ -57,7 +57,7 @@ method_positional_kw_defaults = Template('''
   "$docstring"
   [$positional_args & {:keys [$kw_args]
                        :or {$defaults}} ]
-    (py/call-attr-kw $clj_module_name "$function_name" [$positional_args] {$kw_args_call_format}))
+    (py/call-attr-kw $clj_module_name "$function_name" [$positional_args_call_format] {$kw_args_call_format}))
 ''')
 
 
