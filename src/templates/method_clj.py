@@ -57,7 +57,7 @@ method_positional_kw_defaults = Template('''
   "$docstring"
   [$positional_args & {:keys [$kw_args]
                        :or {$defaults}} ]
-    (py/call-attr-kw $clj_module_name "$function_name" [] {$kw_args_call_format}))
+    (py/call-attr-kw $clj_module_name "$function_name" [$positional_args] {$kw_args_call_format}))
 ''')
 
 
