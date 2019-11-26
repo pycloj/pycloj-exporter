@@ -30,14 +30,14 @@ def handle_class(src_path, class_name, the_class, base_path, module_name,
         namespace = ".".join([base_path, module_name, class_name])
         full_import_path = ".".join([base_path, module_name])
 
-    data.append(handle_function(module_name, class_name, the_class))
+    data.append(handle_function(module_name, class_name, the_class, constractor=True))
     for e in elements:
         if e[0][0] == "_":
             continue
         if e[0] in ignore:
             continue
         elif inspect.isfunction(e[1]):
-            res = handle_function(module_name, e[0], e[1],class_member=True)
+            res = handle_function(module_name, e[0], e[1], class_member=True)
             data.append(res)
         elif isinstance(e[1], property):
             res = handle_property(module_name, e[0], e[1])

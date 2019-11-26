@@ -3,7 +3,10 @@ from templates.method_clj import (method_positional,
                                   method_kw_defaults, 
                                   method_positional_kw, 
                                   method_positional_kw_defaults, 
-                                  property_tpl
+                                  property_tpl,
+                                  method_all_tpl,
+                                  method_all_defaults_tpl,
+                                  method_no_args
                                   )
 from templates.project_clj import project_tpl
 from templates.source_file_head_clj import source_file_head
