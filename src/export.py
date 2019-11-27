@@ -6,6 +6,9 @@ from template import get_project
 from version import VERSION
 import os
 
+
+
+
 def is_my_sub_module(m, sub):
     try:
         # print("is sub module", m.__file__, sub.__file__)
@@ -49,7 +52,7 @@ def handle_sub_module(src_path,
                       ignore_sub_modules=[],
                       depth=1):
     elements = inspect.getmembers(base_module)
-    data = []
+    # data = []
     for e in elements:
         if should_skip_module(e[0], base_module, e[1]):
             continue
@@ -69,7 +72,6 @@ def create_project_file(lib_version, module_name, path):
     print(os.path.join(path, "project.clj"))
     with open(os.path.join(path, "project.clj"), "w") as f:
         f.writelines(project)
-
 
 def handle_package(module_name,
                    path="",
@@ -96,6 +98,43 @@ def handle_package(module_name,
                       base_name=module_name,
                       only_sub_modules=only_sub_modules,
                       ignore_sub_modules=only_sub_modules)
+    # print(only_sub_modules)
+
+    # if len(only_sub_modules) > 0:
+    #     for m in only_sub_modules:
+    #         sub_module = import_sub_module(m)
+    #         if sub_module:
+    #             handle_sub_module(src_path,
+    #                   sub_module,
+    #                   base_name=m,
+    #                   only_sub_modules=only_sub_modules,
+    #                   ignore_sub_modules=only_sub_modules)
+
+
+
+
+def import_sub_module(sub_module_name):
+    try:
+        sub_module = __import__(sub_module_name)
+        globals()[sub_module_name] = sub_module
+        return sub_module
+    except:
+        print(f"could not import {sub_module_name}")
+        # exit(0)
+        return None
+
+def import_all_sub_module(base_module_name):
+    import pkgutil
+    the_module = __import__(base_module_name)
+    globals()[base_module_name] = the_module
+    for imp, m, ispkg in pkgutil.walk_packages(path=the_module.__path__):
+        if ispkg:
+            try:
+                mname = f"{base_module_name}.{m}"
+                sub_m = __import__(mname)
+                globals()[mname]= sub_m 
+            except:
+                print(f"could not import module {m}")
 
 
 if __name__ == "__main__":
@@ -130,8 +169,13 @@ if __name__ == "__main__":
 
     if args.only_sub_modules:
         only_sub_modules = args.only_sub_modules.split(",")
+        print(only_sub_modules)
+        for m in only_sub_modules:
+            import_sub_module(m)
     else:
+        import_all_sub_module(args.module)
         only_sub_modules = []
+        
     if args.ignore_sub_modules:
         ignore_sub_modules = args.ignore_sub_modules.split(",")
     else:

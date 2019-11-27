@@ -122,21 +122,21 @@ def get_function_new(module_name,
 
     if positional_args and kw_args and defaults:
         tpl = method_positional_kw_defaults
-        print("selected method_positional_kw_defaults")
+        # print("selected method_positional_kw_defaults")
     elif positional_args and kw_args:
-        print("selected ")
+        # print("selected ")
         tpl = method_positional_kw
     elif defaults and kw_args:
-        print("selected ")
+        # print("selected ")
         tpl = method_kw_defaults
     elif kw_args:
-        print("selected method_positional")
+        # print("selected method_positional")
         tpl = method_kw
     elif positional_args:
-        print("selected method_positional")
+        # print("selected method_positional")
         tpl = method_positional
     else:
-        print("selected method_positional")
+        # print("selected method_positional")
         tpl = method_no_args
     
     #DEBUG

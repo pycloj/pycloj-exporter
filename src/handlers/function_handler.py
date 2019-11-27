@@ -12,6 +12,20 @@ def get_default_arg_value(default_val):
     else:
         return str(default_val)
 
+def is_default_empty(p):
+    try:
+        if type(p.default) == type:
+            if p.default == inspect._empty:
+                return True
+            else:
+                return False
+        elif p.default == None:
+            return True
+        else:
+            return False
+    except:
+        return False
+    
 
 def get_args(sig):
     kw = []
@@ -24,14 +38,16 @@ def get_args(sig):
                 inspect.Parameter.POSITIONAL_ONLY,
                 inspect.Parameter.POSITIONAL_OR_KEYWORD
         ] and p.name != "self":
-            if p.default == inspect._empty and not first_default:
-              positional.append(p.name)
-            else:
+            # print(p.default, type(p.default))
+            if is_default_empty(p) or first_default:
               first_default = True
               kw.append(p.name)
-              if p.default != inspect._empty and p.default != None:
+              if is_default_empty(p):
                 defaults.append(p.name)
                 defaults.append(get_default_arg_value(p.default))
+            else:
+              positional.append(p.name)
+              
     return  " ".join(positional), " ".join(kw), " ".join(defaults),
   
 
