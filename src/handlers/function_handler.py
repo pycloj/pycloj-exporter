@@ -9,22 +9,26 @@ def get_default_arg_value(default_val):
         return str(default_val).lower()
     elif type(default_val) == list:
         return str(default_val)
+    elif type(default_val) == type:
+      if default_val.__name__ == "_empty":
+        return ""
     else:
         return str(default_val)
 
 def is_default_empty(p):
-    try:
-        if type(p.default) == type:
-            if p.default == inspect._empty:
-                return True
-            else:
-                return False
-        elif p.default == None:
+    # try:
+    print(type(p.default), p.default)
+    if type(p.default) == type:
+        if p.default.__name__ == "_empty":
             return True
         else:
             return False
-    except:
+    elif p.default is None:
+        return True
+    else:
         return False
+    # except:
+    #     return False
     
 
 def get_args(sig):
@@ -39,7 +43,7 @@ def get_args(sig):
                 inspect.Parameter.POSITIONAL_OR_KEYWORD
         ] and p.name != "self":
             # print(p.default, type(p.default))
-            if is_default_empty(p) or first_default:
+            if not is_default_empty(p) or first_default:
               first_default = True
               kw.append(p.name)
               if is_default_empty(p):
@@ -59,6 +63,7 @@ def should_skip_function(func_name, base_module, func):
 
 
 def handle_function(module_name, fn_name, fn, class_member=False,constractor=False):
+    print(module_name, fn_name)
     if fn_name[0] == "_":
         return ""
     try:
