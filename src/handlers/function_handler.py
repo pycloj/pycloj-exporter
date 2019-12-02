@@ -12,6 +12,10 @@ def get_default_arg_value(default_val):
     elif type(default_val) == type:
       if default_val.__name__ == "_empty":
         return ""
+      else:
+        return str(default_val)
+    elif default_val is None:
+      return None
     else:
         return str(default_val)
 
@@ -46,7 +50,7 @@ def get_args(sig):
             if not is_default_empty(p) or first_default:
               first_default = True
               kw.append(p.name)
-              if is_default_empty(p):
+              if not is_default_empty(p):
                 defaults.append(p.name)
                 defaults.append(get_default_arg_value(p.default))
             else:

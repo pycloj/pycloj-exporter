@@ -30,7 +30,9 @@ def should_skip_module(module_name,
                        element,
                        ignore_sub_modules=[],
                        only_sub_modules=[]):
-    if len(only_sub_modules) > 0:
+    if module_name[0] == "_":
+        return True
+    elif len(only_sub_modules) > 0:
         if module_name in only_sub_modules:
             return False
         else:
@@ -38,8 +40,6 @@ def should_skip_module(module_name,
     elif len(ignore_sub_modules) > 0:
         if module_name in ignore_sub_modules:
             return True
-    elif module_name[0] == "_":
-        return True
     elif not is_my_sub_module(base_module, element):
         return True
     return False
@@ -53,16 +53,19 @@ def handle_sub_module(src_path,
                       depth=1):
     elements = inspect.getmembers(base_module)
     # data = []
-    for e in elements:
-        if should_skip_module(e[0], base_module, e[1]):
-            continue
-        elif inspect.ismodule(e[1]):
-            handle_sub_module(src_path,
-                              e[1],
-                              base_name=base_name + "." + e[0],
-                              depth=depth + 1)
-            print("-" * depth, base_name + "." + e[0])
-            handle_module(src_path, base_name, e[0], e[1])
+    try:
+        for e in elements:
+          if should_skip_module(e[0], base_module, e[1]):
+              continue
+          elif inspect.ismodule(e[1]):
+              handle_sub_module(src_path,
+                                e[1],
+                                base_name=base_name + "." + e[0],
+                                depth=depth + 1)
+              print("-" * depth, base_name + "." + e[0])
+              handle_module(src_path, base_name, e[0], e[1])
+    except Exception as e:
+      print(e)
 
 
 def create_project_file(lib_version, module_name, path):
