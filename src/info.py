@@ -75,6 +75,12 @@ def king_to_str(kind):
   return str(kind).split(".")[-1]
 def get_function_info(fn):
     args = []
+
+    generator = inspect.isgeneratorfunction(fn)
+    is_async = inspect.iscoroutine(fn)
+    awaitable = inspect.isawaitable(fn)
+    isbuiltin = inspect.isbuiltin(fn)
+
     sig = inspect.signature(fn)
     for p in sig.parameters.values():
         args.append({
@@ -88,7 +94,11 @@ def get_function_info(fn):
         "args": args,
         "name": fn.__name__,
         "return_annotation": empty_or_val(sig.return_annotation),
-        "doc": protect_docstring(fn.__doc__)
+        "doc": protect_docstring(fn.__doc__),
+        "generator":generator,
+        "async":is_async,
+        "awaitable":awaitable,
+        "builtin":isbuiltin,
     }
 
 # import keras
@@ -122,8 +132,8 @@ def get_class_members(the_class):
 
 
 
-import keras
-print(get_class_members(keras.Sequential))
+# import keras
+# print(get_class_members(keras.Sequential))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Info about a python module ")
