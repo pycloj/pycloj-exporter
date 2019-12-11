@@ -60,7 +60,7 @@ def get_classes(module_name):
     return class_list
 
 
-def get_submodule(module_name):
+def get_submodules(module_name):
     the_module = import_module(module_name)
     submodule_list = []
     members = inspect.getmembers(the_module)
@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
     if args.data == "submodules":
         print("--submodules--")
-        print(get_submodule(args.module))
+        print(get_submodules(args.module))
     if args.data == "functions":
         print("--functions--")
         print(get_functions(args.module))
@@ -169,7 +169,7 @@ if __name__ == "__main__":
         print(get_classes(args.module))
     if args.data == "all":
         print("--submodules--")
-        print(get_submodule(args.module))
+        print(get_submodules(args.module))
         print("--functions--")
         print(get_functions(args.module))
         print("--classes--")
