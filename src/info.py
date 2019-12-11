@@ -40,7 +40,8 @@ def import_module(module_name, import_sub_module=True):
     return the_module
 
 
-def get_functions(the_module):
+def get_functions(module_name):
+    the_module = import_module(module_name)
     function_list = []
     members = inspect.getmembers(the_module)
     for member in members:
@@ -49,7 +50,8 @@ def get_functions(the_module):
     return function_list
 
 
-def get_classes(the_module):
+def get_classes(module_name):
+    the_module = import_module(module_name)
     class_list = []
     members = inspect.getmembers(the_module)
     for member in members:
@@ -58,7 +60,8 @@ def get_classes(the_module):
     return class_list
 
 
-def get_submodule(the_module):
+def get_submodule(module_name):
+    the_module = import_module(module_name)
     submodule_list = []
     members = inspect.getmembers(the_module)
     for member in members:
@@ -153,21 +156,21 @@ if __name__ == "__main__":
                         help='the kind of data we want for the element')
 
     args = parser.parse_args()
-    the_module = import_module(args.module)
+    
 
     if args.data == "submodules":
         print("--submodules--")
-        print(get_submodule(the_module))
+        print(get_submodule(args.module))
     if args.data == "functions":
         print("--functions--")
-        print(get_functions(the_module))
+        print(get_functions(args.module))
     if args.data == "classes":
         print("--classes--")
-        print(get_classes(the_module))
+        print(get_classes(args.module))
     if args.data == "all":
         print("--submodules--")
-        print(get_submodule(the_module))
+        print(get_submodule(args.module))
         print("--functions--")
-        print(get_functions(the_module))
+        print(get_functions(args.module))
         print("--classes--")
-        print(get_classes(the_module))
+        print(get_classes(args.module))
