@@ -70,7 +70,10 @@ def get_submodules(module_name):
     return submodule_list
 
 def empty_or_val(val):
-  if val == inspect._empty:
+  # print(val, type(val))
+  if hasattr(val,"__class__"):
+    return val
+  elif val == inspect._empty:
     return None
   return val
 
