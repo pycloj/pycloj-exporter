@@ -70,12 +70,27 @@ def get_submodules(module_name):
     return submodule_list
 
 def empty_or_val(val):
+  """[summary]
+  
+  Arguments:
+      val {any} -- default type as given by inspect
+  
+  Returns:
+      str -- type of the defult value
+      any -- value
+  """
   # print(val, type(val))
   if hasattr(val,"__class__"):
-    return val
-  elif val == inspect._empty:
-    return None
-  return val
+    if val.__class__ == type:
+      if val == inspect._empty:
+        return "any", None
+      else:
+        return type(val), val
+    else:
+      return val.__class__, val
+  else:
+    return type(val), val
+  
 
 def king_to_str(kind):
   return str(kind).split(".")[-1]
