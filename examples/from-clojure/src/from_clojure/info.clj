@@ -9,21 +9,21 @@
                   pkgutil
                   operator))
 
-(defn protect-doctstring [dstr]
-  (if (string? dstr)
-    (string/replace dstr "\"" "\\\"")))
-
-(defn module->name [module]
-  (when-not (:failed-import? module)
-    (py/get-attr module "__name__")))
-
 (def name->module
   (memoize
    (fn [module-name]
      (try (py/import-module module-name)
           (catch Exception e
-            {:failed-import? true
-             :module-name   module-name})))))
+            (merge
+             {:failed-import? true
+              :module-name    module-name}
+             (-> e
+                 Throwable->map
+                 (select-keys [:cause]))))))))
+
+(defn module->name [module]
+  (when-not (:failed-import? module)
+    (py/get-attr module "__name__")))
 
 (comment
   (name->module "pandas")
@@ -35,9 +35,11 @@
 ;; => "pandas"
 
   (name->module "pandas.compat.numpy.compat")
-;; =>
- {:failed-import? true, :module-name "pandas.compat.numpy.compat"}
-)
+  ;; =>
+#_{:failed-import? true,
+   :module-name "pandas.compat.numpy.compat",
+   :cause "ModuleNotFoundError: No module named 'pandas.compat.numpy.compat'\n"})
+
 
 (defn module->submodules-names [module]
   (when-not (:failed-import? module)
@@ -55,7 +57,7 @@
   (-> "pandas"
       name->module
       module->submodules-names)
-  ;; => 
+  ;; =>
   ("pandas._config" "pandas._libs" "pandas.api" "pandas.arrays" "pandas.compat" "pandas.core" "pandas.errors" "pandas.io" "pandas.plotting" "pandas.tests" "pandas.tseries" "pandas.util")
 
   (-> "pandas.compat.numpy"
@@ -97,7 +99,21 @@
        (map :module-name))
   ;; =>
   ("pandas.compat.numpy.compat" "pandas.compat.numpy.compat.tests" "pandas.compat.numpy.core" "pandas.compat.numpy.core.tests" "pandas.compat.numpy.distutils" "pandas.compat.numpy.distutils.command" "pandas.compat.numpy.distutils.fcompiler" "pandas.compat.numpy.distutils.tests" "pandas.compat.numpy.doc" "pandas.compat.numpy.f2py" "pandas.compat.numpy.f2py.tests" "pandas.compat.numpy.fft" "pandas.compat.numpy.fft.tests" "pandas.compat.numpy.lib" "pandas.compat.numpy.lib.tests" "pandas.compat.numpy.linalg" "pandas.compat.numpy.linalg.tests" "pandas.compat.numpy.ma" "pandas.compat.numpy.ma.tests" "pandas.compat.numpy.matrixlib" "pandas.compat.numpy.matrixlib.tests" "pandas.compat.numpy.polynomial" "pandas.compat.numpy.polynomial.tests" "pandas.compat.numpy.random" "pandas.compat.numpy.random.tests" "pandas.compat.numpy.random.tests.data" "pandas.compat.numpy.testing" "pandas.compat.numpy.testing._private" "pandas.compat.numpy.testing.tests" "pandas.compat.numpy.tests" "pandas.tests.extension.base")
-
+ (->> "pandas" (->> "pandas"
+     name->module
+     module->classes-map
+     :DataFrame
+     inspect/getmembers
+     (map (fn [m]
+            (inspect/ismethod m)))
+     frequencies)
+     name->module
+     module->classes-map
+     :DataFrame
+     inspect/getmembers
+     (map (fn [m]
+            (inspect/ismethod m)))
+     frequencies)
   (->> "pandas"
        name->module
        module->recursive-submodules
@@ -118,7 +134,7 @@
        (filter (fn [[k v]]
                  (inspect/isfunction v)))
        (map (fn [[k v]]
-              [(keyword k) (empty->nil v)]))
+              [(keyword k) v]))
        (into {})))
 
 (comment
@@ -128,22 +144,25 @@
 ;; => {:to_timedelta <function to_timedelta at 0x7fd7bee338c8>, :merge_ordered <function merge_ordered at 0x7fd7bca8a8c8>, :read_feather <function read_feather at 0x7fd7bc76d7b8>, :unique <function unique at 0x7fd7bfab3a60>, :timedelta_range <function timedelta_range at 0x7fd7bedbc730>, :read_spss <function read_spss at 0x7fd7bc522c80>, :read_msgpack <function read_msgpack at 0x7fd7bc525048>, :to_msgpack <function to_msgpack at 0x7fd7bc505ae8>, :read_csv <function _make_parser_function.<locals>.parser_f at 0x7fd7bca479d8>, :read_fwf <function read_fwf at 0x7fd7bca47ae8>, :to_datetime <function to_datetime at 0x7fd7bfa00048>, :read_sql_table <function read_sql_table at 0x7fd7bbc55bf8>, :set_eng_float_format <function set_eng_float_format at 0x7fd7be634a60>, :read_html <function read_html at 0x7fd7bc786730>, :notnull <function notna at 0x7fd7c01ccf28>, :factorize <function factorize at 0x7fd7bfab3d08>, :concat <function concat at 0x7fd7bca83a60>, :read_json <function read_json at 0x7fd7bc505510>, :infer_freq <function infer_freq at 0x7fd7bfa18730>, :qcut <function qcut at 0x7fd7bca248c8>, :read_table <function _make_parser_function.<locals>.parser_f at 0x7fd7bca47a60>, :read_sas <function read_sas at 0x7fd7bbc55620>, :read_sql <function read_sql at 0x7fd7bbc55d08>, :interval_range <function interval_range at 0x7fd7bedc0950>, :lreshape <function lreshape at 0x7fd7bca8a158>, :array <function array at 0x7fd7c1141598>, :read_stata <function read_stata at 0x7fd7bbbe6a60>, :merge <function merge at 0x7fd7bca8a7b8>, :period_range <function period_range at 0x7fd7bed529d8>, :merge_asof <function merge_asof at 0x7fd7bca8a950>, :notna <function notna at 0x7fd7c01ccf28>, :isnull <function isna at 0x7fd7c01ccbf8>, :read_parquet <function read_parquet at 0x7fd7bc525d90>, :to_numeric <function to_numeric at 0x7fd7bfa202f0>, :date_range <function date_range at 0x7fd7bededbf8>, :wide_to_long <function wide_to_long at 0x7fd7bca8a1e0>, :show_versions <function show_versions at 0x7fd7bca24f28>, :read_sql_query <function read_sql_query at 0x7fd7bbc55c80>, :melt <function melt at 0x7fd7bca8a0d0>, :read_hdf <function read_hdf at 0x7fd7bbc3e6a8>, :pivot <function pivot at 0x7fd7bca24488>, :isna <function isna at 0x7fd7c01ccbf8>, :value_counts <function value_counts at 0x7fd7bfab3bf8>, :read_pickle <function read_pickle at 0x7fd7bc5221e0>, :bdate_range <function bdate_range at 0x7fd7bededc80>, :read_gbq <function read_gbq at 0x7fd7bc76da60>, :crosstab <function crosstab at 0x7fd7bca24510>, :pivot_table <function pivot_table at 0x7fd7bca24048>, :get_dummies <function get_dummies at 0x7fd7bcd3f488>, :read_clipboard <function read_clipboard at 0x7fd7bca29268>, :test <function test at 0x7fd7bca29158>, :to_pickle <function to_pickle at 0x7fd7bc525e18>, :cut <function cut at 0x7fd7bca24840>, :read_excel <function read_excel at 0x7fd7bc7589d8>, :eval <function eval at 0x7fd7bca838c8>}
   )
 
-(defn module->classes [module]
+(defn module->classes-map [module]
   (->> module
        inspect/getmembers
        (filter (fn [[k v]]
                  (inspect/isclass v)))
        (map (fn [[k v]]
-              [(keyword k) (empty->nil v)]))
+              [(keyword k) v]))
        (into {})))
 
 (comment
   (->> "pandas"
        name->module
-       module->classes)
-  ;; If you try to print it, an error occurs.
-  ;; See discussion here: https://clojurians.zulipchat.com/#narrow/stream/215609-libpython-clj-dev/topic/some.20things.20cannot.20be.20printed
+       module->classes-map)
+;; => {:IntervalDtype pandas.core.dtypes.dtypes.IntervalDtype, :Int64Index pandas.core.indexes.numeric.Int64Index, :UInt64Index pandas.core.indexes.numeric.UInt64Index, :PeriodIndex pandas.core.indexes.period.PeriodIndex, :CategoricalDtype pandas.core.dtypes.dtypes.CategoricalDtype, :UInt8Dtype pandas.core.arrays.integer.UInt8Dtype, :UInt64Dtype pandas.core.arrays.integer.UInt64Dtype, :SparseArray pandas.core.arrays.sparse.SparseArray, :ExcelFile pandas.io.excel._base.ExcelFile, :HDFStore pandas.io.pytables.HDFStore, :Series pandas.core.series.Series, :Int16Dtype pandas.core.arrays.integer.Int16Dtype, :option_context pandas._config.config.option_context, :NamedAgg pandas.core.groupby.generic.NamedAgg, :CategoricalIndex pandas.core.indexes.category.CategoricalIndex, :Index pandas.core.indexes.base.Index, :UInt32Dtype pandas.core.arrays.integer.UInt32Dtype, :TimedeltaIndex pandas.core.indexes.timedeltas.TimedeltaIndex, :ExcelWriter pandas.io.excel._base.ExcelWriter, :Int64Dtype pandas.core.arrays.integer.Int64Dtype, :Interval pandas._libs.interval.Interval, :UInt16Dtype pandas.core.arrays.integer.UInt16Dtype, :SparseDataFrame pandas.core.sparse.frame.SparseDataFrame, :Int8Dtype pandas.core.arrays.integer.Int8Dtype, :SparseDtype pandas.core.arrays.sparse.SparseDtype, :PeriodDtype pandas.core.dtypes.dtypes.PeriodDtype, :Period pandas._libs.tslibs.period.Period, :Int32Dtype pandas.core.arrays.integer.Int32Dtype, :DateOffset pandas.tseries.offsets.DateOffset, :datetime datetime.datetime, :Panel pandas.Panel, :SparseSeries pandas.core.sparse.series.SparseSeries, :Timestamp pandas._libs.tslibs.timestamps.Timestamp, :Categorical pandas.core.arrays.categorical.Categorical, :Timedelta pandas._libs.tslibs.timedeltas.Timedelta, :DatetimeTZDtype pandas.core.dtypes.dtypes.DatetimeTZDtype, :RangeIndex pandas.core.indexes.range.RangeIndex, :DatetimeIndex pandas.core.indexes.datetimes.DatetimeIndex, :Grouper pandas.core.groupby.grouper.Grouper, :Float64Index pandas.core.indexes.numeric.Float64Index, :DataFrame pandas.core.frame.DataFrame, :MultiIndex pandas.core.indexes.multi.MultiIndex, :IntervalIndex pandas.core.indexes.interval.IntervalIndex}
   )
+
+(defn protect-doctstring [dstr]
+  (if (string? dstr)
+    (string/replace dstr "\"" "\\\"")))
 
 (defn function->info [f]
   (let [sig  (inspect/signature f)
@@ -191,7 +210,55 @@
      :generator?        false,
      :async?            false,
      :awaitable?        false,
-     :builtin?          false}
-)
+     :builtin?          false})
 
 
+(comment
+  (->> "pandas"
+       name->module
+       module->classes-map
+       :DataFrame
+       inspect/getmembers
+       (map (fn [m]
+              (inspect/ismethod m)))
+       frequencies))
+
+
+(defn class->methods [c]
+  (->> c
+       inspect/getmembers))
+
+
+;; exporter.py: is_my_sub_module
+
+;; see if we can discover what the problem is
+
+
+
+
+
+;; tfds.Split.TRAIN.subsplit
+
+
+
+(comment
+  (def tensorflow
+    (py/import-module "tensorflow"))
+
+  (def tensorflow-datasets
+    (py/import-module "tensorflow_datasets"))
+
+  (->> "tensorflow_datasets"
+       name->module
+       module->classes-map
+       :Split
+       inspect/getmembers)
+
+  (py/$.. tensorflow)
+
+
+  (require-python 'tensorflow_datasets)
+
+  (tensorflow_datasets.Split.TRAIN/subsplit .)
+
+  (py/$.. tensorflow-datasets Split TRAIN))
